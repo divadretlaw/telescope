@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, OnInit, Output, ViewChild } from '@angular/core';
-import * as EventEmitter from 'events';
+import { Point } from './point';
+import { Star } from './star';
 
 @Component({
   selector: 'app-root',
@@ -12,12 +13,13 @@ export class AppComponent implements OnInit {
 
   image: HTMLImageElement = null;
 
-  reference = { x: 100, y: 100, radius: 5 };
-  star = { x: 200, y: 200, radius: 10, lineRadius: 5, distance: 100 };
-
+  reference: Point;
+  star: Star;
   private mouse = { down: false };
 
   constructor() {
+    this.reference = new Point(820, 151, 5);
+    this.star = new Star(698, 441, 100, 5);
   }
 
   ngOnInit(): void {
@@ -58,11 +60,11 @@ export class AppComponent implements OnInit {
     });
   }
 
-  handleFileInput(files: FileList) {
-    console.debug("handleFileInput(files:)");
+  handleFileInput(files: any) {
+    console.debug("handleFileInput(files:)", files);
 
     let self = this;
-    let file = files.item(0);
+    let file = files.files[0];
 
     let image = new Image();
     image.src = URL.createObjectURL(file);
@@ -101,7 +103,7 @@ export class AppComponent implements OnInit {
     ctx.beginPath();
     ctx.lineWidth = 5;
     ctx.arc(this.reference.x, this.reference.y, this.reference.radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'red';
+    ctx.strokeStyle = '#FC6A5D';
     ctx.stroke();
     ctx.closePath();
   }
@@ -112,12 +114,12 @@ export class AppComponent implements OnInit {
     ctx.beginPath();
     ctx.lineWidth = 5;
     ctx.arc(this.star.x, this.star.y, this.star.radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'blue';
+    ctx.strokeStyle = '#74B6F6';
     ctx.stroke();
     ctx.closePath();
 
     ctx.beginPath();
-    ctx.lineWidth = this.star.lineRadius;
+    ctx.lineWidth = this.star.line.width;
 
     let x = this.star.x - this.reference.x;
     let y = this.star.y - this.reference.y;
@@ -125,7 +127,7 @@ export class AppComponent implements OnInit {
     let radius = Math.sqrt(Math.pow(Math.abs(x), 2) + Math.pow(Math.abs(y), 2));
 
     let startAngle = Math.acos(x / radius);
-    let arc = this.star.distance / radius;
+    let arc = this.star.line.length / radius;
     if (y <= 0) {
       startAngle *= -1;
     }
@@ -133,12 +135,12 @@ export class AppComponent implements OnInit {
 
     ctx.arc(this.reference.x, this.reference.y, radius, startAngle, endAngle, true);
 
-    ctx.strokeStyle = 'blue';
+    ctx.strokeStyle = '#74B6F6';
     ctx.stroke();
     ctx.closePath();
   }
 
-  private hitTest(value: any, mouseX: number, mouseY: number): boolean {
+  private hitTest(value: Point, mouseX: number, mouseY: number): boolean {
     let returnValue = false;
     this.context.beginPath();
     this.context.arc(value.x, value.y, value.radius + 10, 0, 2 * Math.PI);

@@ -1,16 +1,56 @@
 main {
     display: flex;
-    justify-content: space-between;
-    background: lightgrey;
+    background: #363945;
 }
 
 .sidebar {
-    width: 320px;
-    border-right: solid 1px black;
+    min-width: 366px;
+    width: 366px;
+    border-right: solid 1px #000;
     padding: 1em;
-    background: white;
+    background: #292A2F;
+    overflow: scroll;
 }
 
 canvas {
+    min-width: 800px;
     height: 100vh;
+    overflow: scroll;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+    padding-bottom: 1em;
+}
+
+.header img {
+    width: 50px;
+    margin-right: 1em;
+}
+
+.draw {
+    padding: 1em 0;
+}
+
+.draw .p-inputgroup {
+    display: flex;
+	flex-direction: row;
+    margin: 0.5em 0;
+} 
+
+.draw label {
+    padding: 0.25em;
+}
+
+.draw *:last-child {
+    width: 100%;
+}
+
+.draw  .p-inputgroup-addon {
+    width: 6em;
 }

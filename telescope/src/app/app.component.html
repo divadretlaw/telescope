@@ -1,43 +1,54 @@
 <main>
-    <canvas id="universe" #universe></canvas>
-    <div class="sidebar">
-        <h1>Telescope</h1>
-        <input type="file" (change)="handleFileInput($event.target.files)">
+    <div class="sidebar p-grid p-fluid">
+        <div class="header">
+            <img src="/assets/icon.png" />
+            <h1>Telescope</h1>
+        </div>
+        
+        <p-fileUpload #fubauto mode="basic" accept="image/*" customUpload="true" (uploadHandler)="handleFileInput($event)" [auto]="true" chooseLabel="Select"></p-fileUpload>
+        <!-- <input type="file" (change)="handleFileInput($event.target.files)"> -->
         <div *ngIf="image">
-            <div>
+            <div class="draw">
                 <h2>Reference</h2>
-                <div>
-                    <label>X</label>
-                    <input type="number" value="{{ reference.x }}" name="X" (change)="reference.x=$event.target.value; draw()"/>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">X</span>
+                    <p-inputNumber name="X" [(ngModel)]="reference.x" mode="decimal" [showButtons]="true" [min]="0" (ngModelChange)="draw()"></p-inputNumber>
                 </div>
-                <div>
-                    <label>Y</label>
-                    <input type="number" value="{{ reference.y }}" name="Y" (change)="reference.y=$event.target.value; draw()"/>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">Y</span>
+                    <p-inputNumber name="Y" [(ngModel)]="reference.y" mode="decimal" [showButtons]="true" [min]="0" (ngModelChange)="draw()"></p-inputNumber>
                 </div>
-                <div>
-                    <label>Radius</label>
-                    <input type="number" value="{{ reference.radius }}" name="Radius" (change)="reference.radius=$event.target.value; draw()"/>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">Radius</span>
+                    <div>
+                        <p-inputNumber name="Radius" [(ngModel)]="reference.radius" mode="decimal" [showButtons]="true" [min]="1" (ngModelChange)="draw()"></p-inputNumber>
+                        <p-slider [(ngModel)]="reference.radius" [min]="1" [max]="10" (ngModelChange)="draw()"></p-slider>
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="draw">
                 <h2>Star</h2>
-                <div>
-                    <label>X</label>
-                    <input type="number" value="{{ star.x }}" name="X" (change)="star.x=$event.target.value; draw()"/>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">X</span>
+                    <p-inputNumber name="X" [(ngModel)]="star.x" mode="decimal" [showButtons]="true" [min]="0" (ngModelChange)="draw()"></p-inputNumber>
                 </div>
-                <div>
-                    <label>Y</label>
-                    <input type="number" value="{{ star.y }}" name="Y" (change)="star.y=$event.target.value; draw()"/>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">Y</span>
+                    <p-inputNumber name="Y" [(ngModel)]="star.y" mode="decimal" [showButtons]="true" [min]="0" (ngModelChange)="draw()"></p-inputNumber>
                 </div>
-                <div>
-                    <label>Radius</label>
-                    <input type="number" value="{{ star.lineRadius }}" name="Radius" (change)="star.lineRadius=$event.target.value; draw()"/>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">Width</span>
+                    <div>
+                        <p-inputNumber name="Width" [(ngModel)]="star.line.width" mode="decimal" [showButtons]="true" [min]="1" (ngModelChange)="draw()"></p-inputNumber>
+                        <p-slider [(ngModel)]="star.line.width" [min]="1" [max]="10" (ngModelChange)="draw()"></p-slider>
+                    </div>
                 </div>
-                <div>
-                    <label>Distance</label>
-                    <input type="number" value="{{ star.distance }}" name="Distance" (change)="star.distance=$event.target.value; draw()"/>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">Length</span>
+                    <p-inputNumber name="Length" [(ngModel)]="star.line.length" mode="decimal" [showButtons]="true" [min]="1" (ngModelChange)="draw()"></p-inputNumber>
                 </div>
             </div>
         </div>
     </div>
+    <canvas id="universe" #universe></canvas>
 </main>
