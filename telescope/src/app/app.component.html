@@ -1,1 +1,43 @@
-<p>Hello Telescope!</p>
+<main>
+    <canvas id="universe" #universe></canvas>
+    <div class="sidebar">
+        <h1>Telescope</h1>
+        <input type="file" (change)="handleFileInput($event.target.files)">
+        <div *ngIf="image">
+            <div>
+                <h2>Reference</h2>
+                <div>
+                    <label>X</label>
+                    <input type="number" value="{{ reference.x }}" name="X" (change)="reference.x=$event.target.value; draw()"/>
+                </div>
+                <div>
+                    <label>Y</label>
+                    <input type="number" value="{{ reference.y }}" name="Y" (change)="reference.y=$event.target.value; draw()"/>
+                </div>
+                <div>
+                    <label>Radius</label>
+                    <input type="number" value="{{ reference.radius }}" name="Radius" (change)="reference.radius=$event.target.value; draw()"/>
+                </div>
+            </div>
+            <div>
+                <h2>Star</h2>
+                <div>
+                    <label>X</label>
+                    <input type="number" value="{{ star.x }}" name="X" (change)="star.x=$event.target.value; draw()"/>
+                </div>
+                <div>
+                    <label>Y</label>
+                    <input type="number" value="{{ star.y }}" name="Y" (change)="star.y=$event.target.value; draw()"/>
+                </div>
+                <div>
+                    <label>Radius</label>
+                    <input type="number" value="{{ star.lineRadius }}" name="Radius" (change)="star.lineRadius=$event.target.value; draw()"/>
+                </div>
+                <div>
+                    <label>Distance</label>
+                    <input type="number" value="{{ star.distance }}" name="Distance" (change)="star.distance=$event.target.value; draw()"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

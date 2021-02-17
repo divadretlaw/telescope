@@ -1,0 +1,16 @@
+main {
+    display: flex;
+    justify-content: space-between;
+    background: lightgrey;
+}
+
+.sidebar {
+    width: 320px;
+    border-right: solid 1px black;
+    padding: 1em;
+    background: white;
+}
+
+canvas {
+    height: 100vh;
+}

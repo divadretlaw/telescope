@@ -24,6 +24,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/reset-css/reset.css",
               "src/styles.css"
             ],
             "scripts": []
