@@ -7,9 +7,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { FileUploadModule } from 'primeng/fileupload';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SliderModule } from 'primeng/slider';
+import { ButtonModule } from 'primeng/button';
 
 import { AppComponent } from './app.component';
-
 
 @NgModule({
   declarations: [
@@ -22,7 +22,8 @@ import { AppComponent } from './app.component';
     FormsModule,
     FileUploadModule,
     InputNumberModule,
-    SliderModule
+    ButtonModule,
+    SliderModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

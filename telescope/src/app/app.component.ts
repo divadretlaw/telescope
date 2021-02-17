@@ -1,4 +1,5 @@
-import { Component, ElementRef, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Component, ElementRef,  OnInit, ViewChild } from '@angular/core';
 import { Point } from './point';
 import { Star } from './star';
 
@@ -11,13 +12,14 @@ export class AppComponent implements OnInit {
   @ViewChild('universe', { static: true, read: ElementRef }) canvas: ElementRef;
   private context: CanvasRenderingContext2D;
 
+  file: File;
   image: HTMLImageElement = null;
 
   reference: Point;
   star: Star;
   private mouse = { down: false };
 
-  constructor() {
+  constructor(private http: HttpClient) {
     this.reference = new Point(820, 151, 5);
     this.star = new Star(698, 441, 100, 5);
   }
@@ -64,10 +66,11 @@ export class AppComponent implements OnInit {
     console.debug("handleFileInput(files:)", files);
 
     let self = this;
-    let file = files.files[0];
+    this.file = files.files[0];
+    console.debug(this.file);
 
     let image = new Image();
-    image.src = URL.createObjectURL(file);
+    image.src = URL.createObjectURL(this.file);
     image.onload = function() {
       self.draw();
     }
@@ -75,17 +78,58 @@ export class AppComponent implements OnInit {
     this.image = image;
   }
 
+  brightness_curve_xhr() {
+    let parameters = { reference: this.reference, star: this.star }
+    let json = JSON.stringify(parameters);
+
+    var data = new FormData();
+    data.append("file", this.file, "startrails-an-der-kleinen-kalmit-20049844-2e00-4822-8a55-6de139cf207a.jpg");
+    data.append("parameters", json);
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = false;
+
+    xhr.addEventListener("readystatechange", function() {
+      if(this.readyState === 4) {
+        const blob = new Blob([this.responseText], { type: 'text/csv' });
+
+        var link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'result.csv';
+        link.click();
+      }
+    });
+
+    xhr.open("POST", "http://localhost:5000/brightness_curve");
+    xhr.send(data);
+  }
+
+  // Not working for some reason
+  brightness_curve() {
+    let parameters = { reference: this.reference, star: this.star }
+    let json = JSON.stringify(parameters);
+
+    var data = new FormData();
+    data.append('file', this.file, this.file.name);
+    data.append('parameters', json);
+
+    this.http
+    .post('http://localhost:5000/brightness_curve', data)
+    .subscribe(data => {
+      console.log("data", data);
+    }, error => {
+      console.error(error);
+    });
+  }
+
   draw() {
     if (this.canvas == undefined  || this.context == undefined || this.image == undefined) {
-      console.log("Unable to draw()");
+      console.error("Unable to draw()");
       return;
     }
-    // console.debug("draw()");
 
     this.canvas.nativeElement.width = this.image.width;
     this.canvas.nativeElement.height = this.image.height;
-
-    // console.debug('canvas.offset', this.canvas.nativeElement);
 
     this.context.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
 

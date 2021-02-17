@@ -13,6 +13,8 @@ def brightness_curve(file, center, star, distance):
     click.echo('(x: %d, y: %d) - radius: %d' % center)
     click.echo('(x: %d, y: %d) - radius: %d' % star)
     click.echo("distance: %d" % distance)
+    csv = brightness_curve(file, center[0], center[1], center[2], star[0], star[1], distance, star[2])
+    click.echo(csv)
 
 
 if __name__ == '__main__':

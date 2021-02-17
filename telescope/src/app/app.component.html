@@ -48,6 +48,7 @@
                     <p-inputNumber name="Length" [(ngModel)]="star.line.length" mode="decimal" [showButtons]="true" [min]="1" (ngModelChange)="draw()"></p-inputNumber>
                 </div>
             </div>
+            <button pButton type="button" label="Generate Brightness Curve" (click)="brightness_curve_xhr()"></button>
         </div>
     </div>
     <canvas id="universe" #universe></canvas>
