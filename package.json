@@ -1,13 +1,35 @@
 {
   "name": "telescope",
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "description": "Angular 8 with Electron (Typescript + SASS + Hot Reload)",
+  "homepage": "https://github.com/divadretlaw/startrail",
+  "author": {
+    "name": "David Walter"
+  },
+  "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --deploy-url /static/",
+    "build": "ng build",
+    "build:electron": "ng build --base-href ./",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "electron:local": "npm run build:electron && electron .",
+    "electron:linux": "npm run build:electron && electron-builder build --linux",
+    "electron:windows": "npm run build:electron && electron-builder build --windows",
+    "electron:mac": "npm run build:electron && electron-builder build --mac"
+  },
+  "build": {
+    "appId": "at.davidwalter.telescope",
+    "asar": true,
+    "asarUnpack": [
+      "server.py",
+      "astrograph/brightness_curve.py"
+    ],
+    "directories": {
+      "output": "release"
+    }
   },
   "private": true,
   "dependencies": {
@@ -19,8 +41,10 @@
     "@angular/platform-browser": "~11.2.0",
     "@angular/platform-browser-dynamic": "~11.2.0",
     "@angular/router": "~11.2.0",
+    "electron-is-packaged": "^1.0.2",
     "primeicons": "^4.1.0",
     "primeng": "^11.2.3",
+    "python-shell": "^2.0.3",
     "reset-css": "^5.0.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
@@ -33,6 +57,8 @@
     "@types/jasmine": "~3.6.0",
     "@types/node": "^12.20.1",
     "codelyzer": "^6.0.0",
+    "electron": "^11.2.3",
+    "electron-builder": "^22.9.1",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~6.1.0",

@@ -2,13 +2,12 @@ import json
 
 from flask import Flask, flash, request, redirect, Response
 from flask import render_template
-from astrograph import brightness_curve
 
-UPLOAD_FOLDER = '/Users/david/Developer/GitHub/startrail/uploads'
+import brightness_curve
+
 ALLOWED_EXTENSIONS = {'tiff', 'jpeg', 'jpg'}
 
 app = Flask(__name__, static_folder='static', template_folder='static')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 @app.after_request
@@ -73,3 +72,11 @@ def astrograph_brightness_curve():
       <input type=submit value=Upload>
     </form>
     '''
+
+
+def launch():
+    app.run(host='127.0.0.1', port=5000)
+
+
+if __name__ == "__main__":
+    launch()

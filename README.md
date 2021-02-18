@@ -1,4 +1,4 @@
-# startrail
+# Telescope
 
 ## Requirements
 
@@ -9,12 +9,15 @@
 
 ## Install
 
-Run `sh install.sh`
-
-See [install.sh](install.sh) for details
+Run `pipenv install`
 
 ## Run
 
-Run `sh debug.sh` and open your browser at [127.0.0.1:5000](http://127.0.0.1:5000)
+### electron app
 
-See [debug.sh](debug.sh) for details
+Run `npm run electron:local`
+
+### Debug
+
+1. Run `sh local.sh` to launch the Python backend
+2. Run `ng serve --open` to launch the Angular frontend

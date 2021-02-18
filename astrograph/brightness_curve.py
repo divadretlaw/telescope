@@ -17,4 +17,9 @@ def calculate(file, center_x, center_y, center_radius, star_x, star_y, star_leng
     print(star_y)
     print(star_length)
     print(star_width)
-    return io.StringIO("Test")
+    csv = """
+    0,5,5,8,6
+    1,5,4,7,6
+    2,5,4,6,6
+    """
+    return io.StringIO(csv)
