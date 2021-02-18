@@ -8,6 +8,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SliderModule } from 'primeng/slider';
 import { ButtonModule } from 'primeng/button';
+import { ColorPickerModule } from 'primeng/colorpicker';
 
 import { AppComponent } from './app.component';
 
@@ -24,6 +25,7 @@ import { AppComponent } from './app.component';
     InputNumberModule,
     ButtonModule,
     SliderModule,
+    ColorPickerModule
   ],
   providers: [],
   bootstrap: [AppComponent]

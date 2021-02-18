@@ -1,7 +1,9 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, ElementRef,  OnInit, ViewChild } from '@angular/core';
-import { Point } from './point';
-import { Star } from './star';
+import { Component, ElementRef,  isDevMode,  OnInit, ViewChild } from '@angular/core';
+import { Point } from './model/point';
+import { Star } from './model/star';
+import { Updateable } from './model/updateable';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -12,16 +14,24 @@ export class AppComponent implements OnInit {
   @ViewChild('universe', { static: true, read: ElementRef }) canvas: ElementRef;
   private context: CanvasRenderingContext2D;
 
+  @ViewChild('fileSelector', { static: true, read: ElementRef }) fileSelector: ElementRef;
+
   file: File;
   image: HTMLImageElement = null;
 
-  reference: Point;
-  star: Star;
-  private mouse = { down: false };
+  reference: Updateable<Point>
+  star: Updateable<Star>;
+
+  private mouse = { down: false, selected: null };
 
   constructor(private http: HttpClient) {
-    this.reference = new Point(820, 151, 5);
-    this.star = new Star(698, 441, 100, 5);
+    if (environment.production) {
+      this.reference = new Updateable(new Point(100, 100, 5), new Point(-1, -1, -1));
+      this.star = new Updateable(new Star(200, 200, 100, 5), new Star(-1, -1, -1, -1));
+    } else {
+      this.reference = new Updateable(new Point(820, 151, 5), new Point(-1, -1, -1));
+      this.star = new Updateable(new Star(698, 441, 100, 5), new Star(-1, -1, -1, -1));
+    }
   }
 
   ngOnInit(): void {
@@ -32,14 +42,30 @@ export class AppComponent implements OnInit {
     console.debug("ngAfterViewInit()");
 
     this.context = this.canvas.nativeElement.getContext('2d');
-    this.canvas.nativeElement.addEventListener('mousedown', () => {
+    this.canvas.nativeElement.addEventListener('mousedown', (e: MouseEvent) => {
       this.mouse.down = true;
+
+      let size = this.canvas.nativeElement.getBoundingClientRect();
+      let xFactor = this.canvas.nativeElement.width / size.width;
+      let yFactor = this.canvas.nativeElement.height / size.height;
+
+      let mouseX = e.offsetX * xFactor;
+      let mouseY = e.offsetY * yFactor;
+
+      if (this.hitTest(this.reference.value, mouseX, mouseY)) {
+        this.mouse.selected = this.reference.value;
+      } else if (this.hitTest(this.star.value, mouseX, mouseY)) {
+        this.mouse.selected = this.star.value;
+      }
     });
     this.canvas.nativeElement.addEventListener('mouseup', () => {
       this.mouse.down = false;
+      this.mouse.selected = null;
     });
     this.canvas.nativeElement.addEventListener('mousemove', (e: MouseEvent) => {
-      if (!this.mouse.down) {
+      // e.preventDefault();
+      // e.stopPropagation();
+      if (!this.mouse.down || this.mouse.selected == null) {
         return;
       }
       
@@ -50,15 +76,8 @@ export class AppComponent implements OnInit {
       let mouseX = e.offsetX * xFactor;
       let mouseY = e.offsetY * yFactor;
 
-      if (this.hitTest(this.reference, mouseX, mouseY)) {
-        this.reference.x = Math.round(mouseX);
-        this.reference.y = Math.round(mouseY);
-      } else if (this.hitTest(this.star, mouseX, mouseY)) {
-        this.star.x = Math.round(mouseX);
-        this.star.y = Math.round(mouseY);
-      }
-
-      this.draw();
+      this.mouse.selected.x = Math.round(mouseX);
+      this.mouse.selected.y = Math.round(mouseY);
     });
   }
 
@@ -79,11 +98,11 @@ export class AppComponent implements OnInit {
   }
 
   brightness_curve_xhr() {
-    let parameters = { reference: this.reference, star: this.star }
+    let parameters = { reference: this.reference.value, star: this.star.value }
     let json = JSON.stringify(parameters);
 
     var data = new FormData();
-    data.append("file", this.file, "startrails-an-der-kleinen-kalmit-20049844-2e00-4822-8a55-6de139cf207a.jpg");
+    data.append("file", this.file);
     data.append("parameters", json);
 
     var xhr = new XMLHttpRequest();
@@ -106,7 +125,7 @@ export class AppComponent implements OnInit {
 
   // Not working for some reason
   brightness_curve() {
-    let parameters = { reference: this.reference, star: this.star }
+    let parameters = { reference: this.reference.value, star: this.star.value }
     let json = JSON.stringify(parameters);
 
     var data = new FormData();
@@ -128,67 +147,83 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    if (!this.reference.didChange() && !this.star.didChange()) {
+      requestAnimationFrame(this.draw.bind(this));
+      return;
+    }
+
     this.canvas.nativeElement.width = this.image.width;
     this.canvas.nativeElement.height = this.image.height;
 
+    this.canvas.nativeElement.style = `min-width: ${this.image.width}px; min-height: ${this.image.height}px`
+
     this.context.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
 
+    let size = this.canvas.nativeElement.getBoundingClientRect();
+
     // Draw Image
-    this.context.drawImage(this.image, 0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+    this.context.drawImage(this.image, 0, 0, this.image.width, this.image.height,
+      0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
     // Draw reference point
     this.drawReferencePoint();
     // Draw star
     this.drawStar();
+
+    console.log("did draw");
+    requestAnimationFrame(this.draw.bind(this));
   }
 
   private drawReferencePoint() {
     let ctx = this.context;
 
     ctx.beginPath();
-    ctx.lineWidth = 5;
-    ctx.arc(this.reference.x, this.reference.y, this.reference.radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#FC6A5D';
+    ctx.lineWidth = 2;
+    ctx.arc(this.reference.value.x, this.reference.value.y, this.reference.value.radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = this.reference.value.color;
     ctx.stroke();
     ctx.closePath();
+
+    this.reference.update()
   }
 
   private drawStar() {
     let ctx = this.context;
     
     ctx.beginPath();
-    ctx.lineWidth = 5;
-    ctx.arc(this.star.x, this.star.y, this.star.radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#74B6F6';
+    ctx.lineWidth = 2;
+    ctx.arc(this.star.value.x, this.star.value.y, this.star.value.radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = this.star.value.color;
     ctx.stroke();
     ctx.closePath();
 
     ctx.beginPath();
-    ctx.lineWidth = this.star.line.width;
+    ctx.lineWidth = this.star.value.line.width;
 
-    let x = this.star.x - this.reference.x;
-    let y = this.star.y - this.reference.y;
+    let x = this.star.value.x - this.reference.value.x;
+    let y = this.star.value.y - this.reference.value.y;
 
     let radius = Math.sqrt(Math.pow(Math.abs(x), 2) + Math.pow(Math.abs(y), 2));
 
     let startAngle = Math.acos(x / radius);
-    let arc = this.star.line.length / radius;
+    let arc = this.star.value.line.length / radius;
     if (y <= 0) {
       startAngle *= -1;
     }
     let endAngle= startAngle - arc;
 
-    ctx.arc(this.reference.x, this.reference.y, radius, startAngle, endAngle, true);
+    ctx.arc(this.reference.value.x, this.reference.value.y, radius, startAngle, endAngle, true);
 
-    ctx.strokeStyle = '#74B6F6';
+    ctx.strokeStyle = this.star.value.color;
     ctx.stroke();
     ctx.closePath();
+
+    this.star.update();
   }
 
   private hitTest(value: Point, mouseX: number, mouseY: number): boolean {
     let returnValue = false;
     this.context.beginPath();
     this.context.arc(value.x, value.y, value.radius + 10, 0, 2 * Math.PI);
-    this.context.fill()
     if (this.context.isPointInPath(mouseX, mouseY)) {
       returnValue = true;
     }
