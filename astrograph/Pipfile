@@ -4,8 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+click = "*"
+numpy = "*"
+opencv-python = "*"
 Flask = "*"
-Click = "*"
+pillow = "*"
 
 [dev-packages]
 

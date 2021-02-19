@@ -1,7 +1,11 @@
 import json
+import io
 
 from flask import Flask, flash, request, redirect, Response
 from flask import render_template
+
+from model.point import Point
+from model.star import Star
 
 import brightness_curve
 
@@ -51,14 +55,10 @@ def astrograph_brightness_curve():
             # file_extension = os.path.splitext(file.filename)[1][1:].strip()
             # filename = file_id + '.' + file_extension
             # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            csv = brightness_curve.calculate(file,
-                                             info['reference']['x'],
-                                             info['reference']['y'],
-                                             info['reference']['radius'],
-                                             info['star']['x'],
-                                             info['star']['y'],
-                                             info['star']['line']['length'],
-                                             info['star']['line']['width'])
+            reference = Point(info['reference']['x'], info['reference']['y'], info['reference']['radius'])
+            star = Star(info['star']['x'], info['star']['y'], info['star']['line']['length'],
+                        info['star']['line']['width'])
+            csv = brightness_curve.calculate_csv(io.BytesIO(file.read()), reference, star)
 
             return Response(csv,
                             mimetype="text/csv",
