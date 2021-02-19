@@ -1,0 +1,39 @@
+main {
+    display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+
+    width: 100vw;
+    height: 100vh;
+}
+
+.card {
+    display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: center;
+	align-content: stretch;
+
+    border: solid 1px #000;
+    border-radius: 25px;
+    padding: 1em;
+    background: #292a2fcc;
+    overflow: scroll;
+    z-index: 10000;
+    backdrop-filter: blur(8px);
+    padding: 5em 10em;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+img {
+    width: 10em;
+    height: auto;
+}
+
+.card > * {
+    margin: 0.5em 0;
+}
