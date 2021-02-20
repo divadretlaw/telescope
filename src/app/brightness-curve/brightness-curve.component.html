@@ -5,7 +5,7 @@
             <h1>Telescope</h1>
         </div>
         
-        <p-fileUpload #form mode="basic" accept="image/*" customUpload="true" (uploadHandler)="handleFileInput($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
+        <p-fileUpload #form mode="basic" accept="image/tiff" customUpload="true" (uploadHandler)="handleFileInput($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
         <!-- <input type="file" (change)="handleFileInput($event.target.files)"> -->
         <div *ngIf="image">
             <div class="draw">
