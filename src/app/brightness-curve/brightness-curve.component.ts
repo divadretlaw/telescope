@@ -1,13 +1,16 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+
 import { Point } from '../model/point';
 import { Star } from '../model/star';
 import { Updateable } from '../model/updateable';
+
 import { environment } from '../../environments/environment';
-import { Router } from '@angular/router';
+import { DeviceDetectorService } from 'ngx-device-detector';
+
 import { FileUpload } from 'primeng/fileupload';
 import { MenuItem } from 'primeng/api';
-
 @Component({
   selector: 'app-brightness-curve',
   templateUrl: './brightness-curve.component.html',
@@ -19,6 +22,7 @@ export class BrightnessCurveComponent implements OnInit {
 
   file: File;
   image: HTMLImageElement = null;
+  isTiffSupported = false;
 
   reference: Updateable<Point>
   star: Updateable<Star>;
@@ -28,7 +32,7 @@ export class BrightnessCurveComponent implements OnInit {
   private forceDraw = false;
   private mouse = { down: false, selected: null };
 
-  constructor(private router: Router, private http: HttpClient) {
+  constructor(private router: Router, private http: HttpClient, private deviceService: DeviceDetectorService) {
     if (environment.production) {
       this.reference = new Updateable(new Point(100, 100, 5), new Point(-1, -1, -1));
       this.star = new Updateable(new Star(200, 200, 100, 5), new Star(-1, -1, -1, -1));
@@ -39,7 +43,19 @@ export class BrightnessCurveComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.debug("ngOnInit()");
+    let deviceInfo = this.deviceService.getDeviceInfo();
+    console.debug("ngOnInit()", deviceInfo);
+
+    switch (deviceInfo.browser) {
+      case 'Safari':
+      case 'safari':
+        this.isTiffSupported = true;
+        break;
+      default:
+        this.isTiffSupported = false;
+        break;
+    }
+
     this.downloadItems = 
       [{
         label: 'Download Brightness Curve (.json)',
@@ -107,16 +123,52 @@ export class BrightnessCurveComponent implements OnInit {
     this.file = files.files[0];
     console.debug(this.file);
 
-    let image = new Image();
-    image.src = URL.createObjectURL(this.file);
-    image.onload = function() {
-      self.draw();
+    console.log(window.webkitURL);
+
+    if (this.isTiffSupported) {
+      let image = new Image();
+      image.src = URL.createObjectURL(this.file);
+      image.onload = function() {
+        self.draw();
+      }
+  
+      this.image = image;
+      this.forceDraw = true;
+    } else {
+      this.loadJpegPreview();
     }
 
-    this.image = image;
-    this.forceDraw = true;
-
     form.clear();
+  }
+
+  loadJpegPreview() {
+    var data = new FormData();
+    data.append("file", this.file);
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = false;
+    xhr.responseType = 'blob'
+
+    let self = this;
+    xhr.addEventListener("readystatechange", function() {
+      if(this.readyState === 4) {
+        var urlCreator = window.webkitURL || window.URL;
+        var imageUrl = urlCreator.createObjectURL(this.response);
+        console.log('imageURL', imageUrl);
+
+        let image = new Image();
+        image.src = imageUrl;
+        image.onload = function() {
+          self.draw();
+        }
+
+        self.image = image;
+        self.forceDraw = true;
+      }
+    });
+
+    xhr.open("POST", "http://localhost:5000/tiff_converter");
+    xhr.send(data);
   }
 
   brightness_curve_csv() {

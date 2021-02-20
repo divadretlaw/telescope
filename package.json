@@ -26,12 +26,17 @@
         "copyright": "Copyright © 2021 ${author}",
         "asar": true,
         "asarUnpack": [
-            "astrograph/rocket.py", "astrograph/brightness_curve.py"
+            "astrograph/rocket.py",
+            "astrograph/brightness_curve.py"
         ],
         "directories": {
             "output": "release"
         },
-        "files": ["main.js", "dist/**", "astrograph/*"],
+        "files": [
+            "main.js",
+            "dist/**",
+            "astrograph/*"
+        ],
         "mac": {
             "icon": "src/assets/icon.png"
         }
@@ -47,6 +52,7 @@
         "@angular/platform-browser-dynamic": "~11.2.0",
         "@angular/router": "~11.2.0",
         "electron-is-packaged": "^1.0.2",
+        "ngx-device-detector": "^2.0.5",
         "primeicons": "^4.1.0",
         "primeng": "^11.2.3",
         "python-shell": "^2.0.3",

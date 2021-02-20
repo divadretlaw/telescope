@@ -1,11 +1,12 @@
 import io
 import json
 
-from flask import Flask, flash, request, redirect, Response
+from flask import Flask, flash, request, redirect, Response, send_file
 
 from brightness_curve import BrightnessCurve
 from model.point import Point
 from model.star import Star
+from converter import convert
 
 ALLOWED_EXTENSIONS = {'tiff'}
 
@@ -56,6 +57,7 @@ def astrograph_brightness_curve():
             brightness_curve.calculate()
 
             if "csv" in info and info["csv"] is True:
+                # return send_file(brightness_curve.csv())
                 return Response(brightness_curve.csv(),
                                 mimetype="text/csv",
                                 headers={"Content-Disposition": "attachment;filename=test.csv"})
@@ -70,6 +72,30 @@ def astrograph_brightness_curve():
       <input type=submit value=Upload>
     </form>
     '''
+
+
+@app.route('/tiff_converter', methods=['POST'])
+def tiff_converter():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    file = request.files['file']
+    # if user does not select file, browser also
+    # submit an empty part without filename
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(request.url)
+    if file and allowed_file(file.filename):
+        data = io.BytesIO(file.read())
+        jpeg = convert(data)
+
+        proxy = io.BytesIO()
+        proxy.write(jpeg.getvalue())
+        # seeking was necessary. Python 3.5.2, Flask 0.12.2
+        proxy.seek(0)
+        jpeg.close()
+
+        return send_file(proxy, mimetype='image/jpeg', as_attachment=True, attachment_filename='preview.jpeg')
 
 
 def launch():
