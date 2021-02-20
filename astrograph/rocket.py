@@ -1,17 +1,15 @@
-import json
 import io
+import json
 
 from flask import Flask, flash, request, redirect, Response
-from flask import render_template
 
+from brightness_curve import BrightnessCurve
 from model.point import Point
 from model.star import Star
 
-import brightness_curve
+ALLOWED_EXTENSIONS = {'tiff'}
 
-ALLOWED_EXTENSIONS = {'tiff', 'jpeg', 'jpg'}
-
-app = Flask(__name__, static_folder='static', template_folder='static')
+app = Flask(__name__)
 
 
 @app.after_request
@@ -28,17 +26,9 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-
 @app.route('/brightness_curve', methods=['GET', 'POST'])
 def astrograph_brightness_curve():
     if request.method == 'POST':
-        print(request)
-        print(request.files)
-        print(request.form)
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
@@ -55,14 +45,22 @@ def astrograph_brightness_curve():
             # file_extension = os.path.splitext(file.filename)[1][1:].strip()
             # filename = file_id + '.' + file_extension
             # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            reference = Point(info['reference']['x'], info['reference']['y'], info['reference']['radius'])
-            star = Star(info['star']['x'], info['star']['y'], info['star']['line']['length'],
+            reference = Point(info['reference']['x'],
+                              info['reference']['y'],
+                              info['reference']['radius'])
+            star = Star(info['star']['x'],
+                        info['star']['y'],
+                        info['star']['line']['length'],
                         info['star']['line']['width'])
-            csv = brightness_curve.calculate_csv(io.BytesIO(file.read()), reference, star)
+            brightness_curve = BrightnessCurve(io.BytesIO(file.read()), reference, star)
+            brightness_curve.calculate()
 
-            return Response(csv,
-                            mimetype="text/csv",
-                            headers={"Content-Disposition": "attachment;filename=test.csv"})
+            if "csv" in info and info["csv"] is True:
+                return Response(brightness_curve.csv(),
+                                mimetype="text/csv",
+                                headers={"Content-Disposition": "attachment;filename=test.csv"})
+            else:
+                return brightness_curve.json()
     return '''
     <!doctype html>
     <title>Upload new File</title>

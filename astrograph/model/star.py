@@ -13,3 +13,6 @@ class Star(Point):
         self.x = x
         self.y = y
         self.line = Line(length, width)
+
+    def dictionary(self):
+        return {"x": self.x, "y": self.y, "line": self.line.dictionary()}

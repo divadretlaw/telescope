@@ -11,6 +11,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SliderModule } from 'primeng/slider';
 import { ButtonModule } from 'primeng/button';
+import { SplitButtonModule } from 'primeng/splitbutton';
 import { ColorPickerModule } from 'primeng/colorpicker';
 
 // MARK: - AppComponents
@@ -33,6 +34,7 @@ import { ErrorComponent } from './error/error.component';
     FileUploadModule,
     InputNumberModule,
     ButtonModule,
+    SplitButtonModule,
     SliderModule,
     ColorPickerModule
   ],

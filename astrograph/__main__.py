@@ -1,10 +1,9 @@
 import click
 import io
 
+from brightness_curve import BrightnessCurve
 from model.point import Point
 from model.star import Star
-
-import brightness_curve
 
 
 @click.command()
@@ -22,8 +21,9 @@ def click_brightness_curve(file, center, star):
     center_model = Point(center[0], center[1], center[2])
     star_model = Star(star[0], star[1], star[2], star[3])
 
-    csv = brightness_curve.calculate_string(io.BytesIO(file_data), center_model, star_model)
-    click.echo(csv)
+    brightness_curve = BrightnessCurve(io.BytesIO(file_data), center_model, star_model)
+    brightness_curve.calculate()
+    click.echo(brightness_curve.json())
 
 
 if __name__ == '__main__':

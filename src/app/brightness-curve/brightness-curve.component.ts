@@ -6,6 +6,7 @@ import { Updateable } from '../model/updateable';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 import { FileUpload } from 'primeng/fileupload';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-brightness-curve',
@@ -22,6 +23,8 @@ export class BrightnessCurveComponent implements OnInit {
   reference: Updateable<Point>
   star: Updateable<Star>;
 
+  downloadItems: MenuItem[];
+
   private forceDraw = false;
   private mouse = { down: false, selected: null };
 
@@ -37,6 +40,21 @@ export class BrightnessCurveComponent implements OnInit {
 
   ngOnInit(): void {
     console.debug("ngOnInit()");
+    this.downloadItems = 
+      [{
+        label: 'Download Brightness Curve (.json)',
+        icon: 'pi pi-file',
+        command: () => {
+          this.brightness_curve_json();
+        }
+      },
+      {
+        label: 'Download Brightness Curve (.csv)',
+        icon: 'pi pi-file-excel',
+        command: () => {
+          this.brightness_curve_csv();
+        }
+      }];
   }
 
   ngAfterViewInit(): void {
@@ -101,8 +119,8 @@ export class BrightnessCurveComponent implements OnInit {
     form.clear();
   }
 
-  brightness_curve_xhr() {
-    let parameters = { reference: this.reference.value, star: this.star.value }
+  brightness_curve_csv() {
+    let parameters = { reference: this.reference.value, star: this.star.value, csv: true }
     let json = JSON.stringify(parameters);
 
     var data = new FormData();
@@ -119,6 +137,32 @@ export class BrightnessCurveComponent implements OnInit {
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
         link.download = 'result.csv';
+        link.click();
+      }
+    });
+
+    xhr.open("POST", "http://localhost:5000/brightness_curve");
+    xhr.send(data);
+  }
+
+  brightness_curve_json() {
+    let parameters = { reference: this.reference.value, star: this.star.value }
+    let json = JSON.stringify(parameters);
+
+    var data = new FormData();
+    data.append("file", this.file);
+    data.append("parameters", json);
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = false;
+
+    xhr.addEventListener("readystatechange", function() {
+      if(this.readyState === 4) {
+        const blob = new Blob([this.responseText], { type: 'text/json' });
+
+        var link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'result.json';
         link.click();
       }
     });

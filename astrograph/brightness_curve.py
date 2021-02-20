@@ -1,23 +1,39 @@
 import io
+import json
+
+from io import BytesIO
+from PIL import Image
+from statistics import mean, median
 
 from model.data import Data
 from model.point import Point
 from model.star import Star
 
-from PIL import Image
-
 import numpy
 
 
-class Result:
+class BrightnessCurve:
+    file: BytesIO
     reference: Point
     star: Star
     data: [Data]
 
-    def __init__(self, reference: Point, star: Star):
+    def __init__(self, file: BytesIO, reference: Point, star: Star):
+        self.file = file
         self.reference = reference
         self.star = star
         self.data = []
+
+        image = Image.open(self.file)
+        self.raw_data = numpy.asarray(image)
+        print(self.raw_data)
+
+    def dictionary(self):
+        return {
+            "center": self.reference.dictionary(),
+            "star": self.star.dictionary(),
+            "data": list(map(lambda x: x.dictionary(), self.data))
+        }
 
     def string(self):
         result = """
@@ -40,40 +56,26 @@ index,average,median,min,max
         csv = self.string()
         return io.StringIO(csv)
 
+    def json(self):
+        return json.dumps(self.dictionary())
 
-def calculate(file, center: Point, star: Star):
-    """
-    TODO: Implement method
-    Load file
-    calculate pixels path to read
-    calculate neighbours of pixel
-    calculate average, median, min, max
-    """
-    image = Image.open(file)
-    data = numpy.asarray(image)
-    print(data)
+    def calculate(self):
+        # TODO: calculate pixels path to read
+        path = [(0, 0), (1, 1), (2, 2), (3, 3)]
+        for index, path in enumerate(path):
+            self.data.append(self.calculate_for(index, path[0], path[1]))
 
-    result = Result(center, star)
-    result.data.append(Data(0, 56, 55, 40, 76))
-    result.data.append(Data(1, 57, 56, 38, 72))
-    result.data.append(Data(2, 59, 57, 41, 70))
-    result.data.append(Data(3, 60, 56, 42, 72))
-    return result
+    def calculate_for(self, index, x, y):
+        value = self.raw_data[x][y]
+        # TODO: Get Neighbours within radius self.star.width
+        # Fix for RGB images
+        if isinstance(value, numpy.ndarray):
+            value = value[0]
 
+        neighbours = [value]
+        min_value = min(neighbours)
+        max_value = max(neighbours)
+        average_value = mean(neighbours)
+        median_value = median(neighbours)
 
-def calculate_csv(file, center: Point, star: Star):
-    result = calculate(file, center, star)
-    return result.csv()
-
-
-def calculate_string(file, center: Point, star: Star):
-    result = calculate(file, center, star)
-    return result.string()
-
-
-def calculate_json(file, center: Point, star: Star):
-    """
-    TODO: Implement method, now just returns same as string
-    """
-    result = calculate(file, center, star)
-    return result.string()
+        return Data(index, float(average_value), float(median_value), float(min_value), float(max_value))
