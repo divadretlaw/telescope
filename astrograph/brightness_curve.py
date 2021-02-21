@@ -6,6 +6,7 @@ from io import BytesIO
 from PIL import Image
 from statistics import mean, median
 
+from model.rgb import RGB
 from model.data import Data
 from model.point import Point
 from model.star import Star
@@ -17,22 +18,32 @@ class BrightnessCurve:
     file: BytesIO
     reference: Point
     star: Star
-    data: [Data]
+    data: [Data] or [RGB]
 
-    def __init__(self, file: BytesIO, raw: bool, reference: Point, star: Star):
+    def __init__(self, file: BytesIO, is_raw: bool, reference: Point, star: Star):
         self.file = file
+        self.is_raw = is_raw
+
         self.reference = reference
         self.star = star
+
         self.data = []
 
-        if raw:
-            self.raw_image = rawpy.imread(self.file)
-            # image = Image.open(self.file)
-            self.raw_data = self.raw_image.postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        if is_raw:
+            raw_image = rawpy.imread(self.file)
+            print(max(raw_image.raw_image[0]))
+            print(numpy.amax(raw_image.raw_image))
+            # self.raw_data = raw_image.raw_image
+            self.raw_data = raw_image.postprocess(gamma=(1, 1),
+                                                  no_auto_bright=True,
+                                                  use_camera_wb=True,
+                                                  output_bps=16)
+            self.raw_image = raw_image
         else:
             image = Image.open(self.file)
             self.raw_data = numpy.asarray(image)
-        print(self.raw_data)
+
+        # print(self.raw_data)
 
     def dictionary(self):
         return {
@@ -78,13 +89,20 @@ index,average,median,min,max
 
     def calculate_for(self, index, x, y):
         value = self.raw_data[x][y]
-        # TODO: Get Neighbours within radius self.star.width
-        # Fix for RGB images
-        print(value)
-        if isinstance(value, numpy.ndarray):
-            value = value[0]
 
+        # Fix for RGB images
+        if isinstance(value, numpy.ndarray):
+            red = self.calculate_for_channel(index, value[0])
+            green = self.calculate_for_channel(index, value[1])
+            blue = self.calculate_for_channel(index, value[2])
+            return RGB(red, green, blue).merge()
+        else:
+            return self.calculate_for_channel(index, value)
+
+    def calculate_for_channel(self, index, value):
+        # TODO: Get Neighbours within radius self.star.width
         neighbours = [value]
+
         min_value = min(neighbours)
         max_value = max(neighbours)
         average_value = mean(neighbours)
