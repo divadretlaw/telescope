@@ -17,12 +17,13 @@ import { MenuItem } from 'primeng/api';
   styleUrls: ['./brightness-curve.component.css']
 })
 export class BrightnessCurveComponent implements OnInit {
+  isLoading = false;
+
   @ViewChild('universe', { static: true, read: ElementRef }) canvas: ElementRef;
   private context: CanvasRenderingContext2D;
 
   file: File;
   image: HTMLImageElement = null;
-  isTiffSupported = false;
 
   reference: Updateable<Point>
   star: Updateable<Star>;
@@ -45,16 +46,6 @@ export class BrightnessCurveComponent implements OnInit {
   ngOnInit(): void {
     let deviceInfo = this.deviceService.getDeviceInfo();
     console.debug("ngOnInit()", deviceInfo);
-
-    switch (deviceInfo.browser) {
-      case 'Safari':
-      case 'safari':
-        this.isTiffSupported = true;
-        break;
-      default:
-        this.isTiffSupported = false;
-        break;
-    }
 
     this.downloadItems = 
       [{
@@ -116,6 +107,16 @@ export class BrightnessCurveComponent implements OnInit {
     });
   }
 
+  setLoading(loading: boolean) {
+    if (loading) {
+      this.isLoading = true;
+      document.getElementById("main").className = 'modal-open';
+    } else {
+      this.isLoading = false;
+      document.getElementById("main").className = '';
+    }
+  }
+
   handleFileInput(files: any, form: FileUpload) {
     console.debug("handleFileInput(files:)", files, form);
 
@@ -124,24 +125,14 @@ export class BrightnessCurveComponent implements OnInit {
     console.debug(this.file);
 
     console.log(window.webkitURL);
-
-    if (this.isTiffSupported) {
-      let image = new Image();
-      image.src = URL.createObjectURL(this.file);
-      image.onload = function() {
-        self.draw();
-      }
-  
-      this.image = image;
-      this.forceDraw = true;
-    } else {
-      this.loadJpegPreview();
-    }
+    this.loadJpegPreview();
 
     form.clear();
   }
 
   loadJpegPreview() {
+    this.setLoading(true);
+
     var data = new FormData();
     data.append("file", this.file);
 
@@ -160,6 +151,7 @@ export class BrightnessCurveComponent implements OnInit {
         image.src = imageUrl;
         image.onload = function() {
           self.draw();
+          self.setLoading(false);
         }
 
         self.image = image;
@@ -167,7 +159,7 @@ export class BrightnessCurveComponent implements OnInit {
       }
     });
 
-    xhr.open("POST", "http://localhost:5000/tiff_converter");
+    xhr.open("POST", "http://localhost:5000/preview");
     xhr.send(data);
   }
 

@@ -1,61 +1,65 @@
-<main>
+<div class="loadingOverlay" *ngIf="isLoading">
+    <p-progressSpinner styleClass="custom-spinner" strokeWidth="5"></p-progressSpinner>
+    <p>Generating preview</p>
+</div>
+<main id="main">
     <div class="sidebar p-grid p-fluid">
         <div class="header">
             <img src="assets/logo.png" />
             <h1>Telescope</h1>
         </div>
         
-        <p-fileUpload #form mode="basic" accept="image/tiff" customUpload="true" (uploadHandler)="handleFileInput($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
+        <p-fileUpload #form [disabled]="isLoading" mode="basic" accept=".tiff, .cr2" customUpload="true" (uploadHandler)="handleFileInput($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
         <!-- <input type="file" (change)="handleFileInput($event.target.files)"> -->
         <div *ngIf="image">
             <div class="draw">
                 <div class="drawHeader">
-                    <p-colorPicker [(ngModel)]="reference.value.color"></p-colorPicker>
+                    <p-colorPicker [disabled]="isLoading" [(ngModel)]="reference.value.color"></p-colorPicker>
                     <h2>Reference</h2>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">X</span>
-                    <p-inputNumber name="X" [(ngModel)]="reference.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="X" [(ngModel)]="reference.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Y</span>
-                    <p-inputNumber name="Y" [(ngModel)]="reference.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="Y" [(ngModel)]="reference.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Radius</span>
                     <div>
-                        <p-inputNumber name="Radius" [(ngModel)]="reference.value.radius" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
-                        <p-slider [(ngModel)]="reference.value.radius" [min]="1" [max]="10"></p-slider>
+                        <p-inputNumber [disabled]="isLoading" name="Radius" [(ngModel)]="reference.value.radius" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
+                        <p-slider [disabled]="isLoading" [(ngModel)]="reference.value.radius" [min]="1" [max]="10"></p-slider>
                     </div>
                 </div>
             </div>
             <div class="draw">
                 <div class="drawHeader">
-                    <p-colorPicker [(ngModel)]="star.value.color"></p-colorPicker>
+                    <p-colorPicker [disabled]="isLoading" [(ngModel)]="star.value.color"></p-colorPicker>
                     <h2>Star</h2>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">X</span>
-                    <p-inputNumber name="X" [(ngModel)]="star.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="X" [(ngModel)]="star.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Y</span>
-                    <p-inputNumber name="Y" [(ngModel)]="star.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="Y" [(ngModel)]="star.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Width</span>
                     <div>
-                        <p-inputNumber name="Width" [(ngModel)]="star.value.line.width" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
-                        <p-slider [(ngModel)]="star.value.line.width" [min]="1" [max]="10"></p-slider>
+                        <p-inputNumber [disabled]="isLoading" name="Width" [(ngModel)]="star.value.line.width" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
+                        <p-slider [disabled]="isLoading" [(ngModel)]="star.value.line.width" [min]="1" [max]="10"></p-slider>
                     </div>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Length</span>
-                    <p-inputNumber name="Length" [(ngModel)]="star.value.line.length" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="Length" [(ngModel)]="star.value.line.length" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
                 </div>
             </div>
             <div class="actions">
-                <p-splitButton label="Download Brightness Curve (.csv)" icon="pi pi-download" (onClick)="brightness_curve_csv()" [model]="downloadItems"></p-splitButton>
+                <p-splitButton [disabled]="isLoading" label="Download Brightness Curve (.csv)" icon="pi pi-download" (onClick)="brightness_curve_csv()" [model]="downloadItems"></p-splitButton>
             </div>
         </div>
     </div>

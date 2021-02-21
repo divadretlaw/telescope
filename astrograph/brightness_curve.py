@@ -1,5 +1,6 @@
 import io
 import json
+import rawpy
 
 from io import BytesIO
 from PIL import Image
@@ -18,14 +19,19 @@ class BrightnessCurve:
     star: Star
     data: [Data]
 
-    def __init__(self, file: BytesIO, reference: Point, star: Star):
+    def __init__(self, file: BytesIO, raw: bool, reference: Point, star: Star):
         self.file = file
         self.reference = reference
         self.star = star
         self.data = []
 
-        image = Image.open(self.file)
-        self.raw_data = numpy.asarray(image)
+        if raw:
+            self.raw_image = rawpy.imread(self.file)
+            # image = Image.open(self.file)
+            self.raw_data = self.raw_image.postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        else:
+            image = Image.open(self.file)
+            self.raw_data = numpy.asarray(image)
         print(self.raw_data)
 
     def dictionary(self):
@@ -61,14 +67,20 @@ index,average,median,min,max
 
     def calculate(self):
         # TODO: calculate pixels path to read
-        path = [(0, 0), (1, 1), (2, 2), (3, 3)]
+        path = []
+        for i in range(100):
+            path.append((i, i))
+
         for index, path in enumerate(path):
             self.data.append(self.calculate_for(index, path[0], path[1]))
+
+        self.raw_image.close()
 
     def calculate_for(self, index, x, y):
         value = self.raw_data[x][y]
         # TODO: Get Neighbours within radius self.star.width
         # Fix for RGB images
+        print(value)
         if isinstance(value, numpy.ndarray):
             value = value[0]
 

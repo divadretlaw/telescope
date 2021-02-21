@@ -3,3 +3,4 @@ Click
 numpy
 opencv-python
 pillow
+rawpy

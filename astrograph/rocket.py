@@ -6,9 +6,9 @@ from flask import Flask, flash, request, redirect, Response, send_file
 from brightness_curve import BrightnessCurve
 from model.point import Point
 from model.star import Star
-from converter import convert
+from converter import convert_tiff, convert_raw
 
-ALLOWED_EXTENSIONS = {'tiff'}
+ALLOWED_EXTENSIONS = {'tiff', 'cr2'}
 
 app = Flask(__name__)
 
@@ -22,9 +22,14 @@ def after_request(response):
     return response
 
 
+def get_file_extension(filename):
+    return filename.rsplit('.', 1)[1].lower()
+
+
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           get_file_extension(filename) in ALLOWED_EXTENSIONS
+
 
 
 @app.route('/brightness_curve', methods=['GET', 'POST'])
@@ -53,7 +58,11 @@ def astrograph_brightness_curve():
                         info['star']['y'],
                         info['star']['line']['length'],
                         info['star']['line']['width'])
-            brightness_curve = BrightnessCurve(io.BytesIO(file.read()), reference, star)
+
+            brightness_curve = BrightnessCurve(io.BytesIO(file.read()),
+                                               get_file_extension(file.filename) != 'tiff',
+                                               reference,
+                                               star)
             brightness_curve.calculate()
 
             if "csv" in info and info["csv"] is True:
@@ -74,7 +83,7 @@ def astrograph_brightness_curve():
     '''
 
 
-@app.route('/tiff_converter', methods=['POST'])
+@app.route('/preview', methods=['POST'])
 def tiff_converter():
     if 'file' not in request.files:
         flash('No file part')
@@ -87,7 +96,11 @@ def tiff_converter():
         return redirect(request.url)
     if file and allowed_file(file.filename):
         data = io.BytesIO(file.read())
-        jpeg = convert(data)
+
+        if get_file_extension(file.filename) == 'tiff':
+            jpeg = convert_tiff(data)
+        else:
+            jpeg = convert_raw(data)
 
         proxy = io.BytesIO()
         proxy.write(jpeg.getvalue())

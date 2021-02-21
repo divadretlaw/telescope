@@ -9,6 +9,8 @@ numpy = "*"
 opencv-python = "*"
 Flask = "*"
 pillow = "*"
+rawpy = "*"
+imageio = "*"
 
 [dev-packages]
 

@@ -21,7 +21,7 @@ def click_brightness_curve(file, center, star):
     center_model = Point(center[0], center[1], center[2])
     star_model = Star(star[0], star[1], star[2], star[3])
 
-    brightness_curve = BrightnessCurve(io.BytesIO(file_data), center_model, star_model)
+    brightness_curve = BrightnessCurve(io.BytesIO(file_data), True, center_model, star_model)
     brightness_curve.calculate()
     click.echo(brightness_curve.json())
 

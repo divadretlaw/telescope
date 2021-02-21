@@ -13,6 +13,7 @@ import { SliderModule } from 'primeng/slider';
 import { ButtonModule } from 'primeng/button';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { ColorPickerModule } from 'primeng/colorpicker';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 // MARK: - AppComponents
 import { AppComponent } from './app.component';
@@ -36,7 +37,8 @@ import { ErrorComponent } from './error/error.component';
     ButtonModule,
     SplitButtonModule,
     SliderModule,
-    ColorPickerModule
+    ColorPickerModule,
+    ProgressSpinnerModule
   ],
   providers: [],
   bootstrap: [AppComponent]
