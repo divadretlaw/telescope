@@ -28,7 +28,7 @@ function createWindow() {
 
     const rootPath = app
         .getAppPath()
-        .replace('app.asar', 'app.asar.unpacked')
+        .replace('app.asar', '')
 
     if (!rocketLaunched) {
         PythonShell.run('rocket.py', {

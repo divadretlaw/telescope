@@ -25,17 +25,16 @@
         "productName": "Telescope",
         "copyright": "Copyright © 2021 ${author}",
         "asar": true,
-        "asarUnpack": [
-            "astrograph/rocket.py",
-            "astrograph/brightness_curve.py"
-        ],
         "directories": {
             "output": "release"
         },
         "files": [
             "main.js",
-            "dist/**",
-            "astrograph/*"
+            "dist/**"
+        ],
+        "extraResources": [
+            "astrograph/*",
+            "astrograph/model/*"
         ],
         "mac": {
             "icon": "src/assets/icon.png"
