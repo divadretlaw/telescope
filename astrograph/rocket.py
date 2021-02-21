@@ -31,6 +31,10 @@ def allowed_file(filename):
            get_file_extension(filename) in ALLOWED_EXTENSIONS
 
 
+@app.route('/', methods=['GET'])
+def status():
+    return "🚀"
+
 
 @app.route('/brightness_curve', methods=['GET', 'POST'])
 def astrograph_brightness_curve():
