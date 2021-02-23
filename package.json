@@ -16,7 +16,7 @@
         "test": "ng test",
         "lint": "ng lint",
         "e2e": "ng e2e",
-        "rocket:launch": "export FLASK_APP=astrograph/rocket.py && flask run",
+        "rocket:launch": "export FLASK_APP=astrograph/rocket.py && flask run --port 40270",
         "electron:local": "npm run build:electron && npm run build:rocket && electron .",
         "electron:linux": "npm run build:electron && npm run build:rocket && electron-builder build --linux",
         "electron:windows": "npm run build:electron && npm run build:rocket && electron-builder build --windows",
@@ -43,7 +43,8 @@
     },
     "private": true,
     "dependencies": {
-        "electron-is-packaged": "^1.0.2"
+        "electron-is-packaged": "^1.0.2",
+        "primeicons": "^4.1.0"
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "^0.1102.1",
@@ -70,7 +71,6 @@
         "karma-jasmine": "~4.0.0",
         "karma-jasmine-html-reporter": "^1.5.0",
         "ngx-device-detector": "^2.0.5",
-        "primeicons": "^4.1.0",
         "primeng": "^11.2.3",
         "protractor": "~7.0.0",
         "reset-css": "^5.0.1",

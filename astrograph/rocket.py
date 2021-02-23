@@ -1,5 +1,7 @@
 import io
 import json
+import imageio
+import logging
 
 from flask import Flask, flash, request, redirect, Response, send_file
 
@@ -11,6 +13,11 @@ from converter import convert_tiff, convert_raw
 ALLOWED_EXTENSIONS = {'tiff', 'cr2'}
 
 app = Flask(__name__)
+
+print(logging.BASIC_FORMAT)
+logging.basicConfig(format='[%(asctime)s] %(levelname)-5s in %(module)s: %(message)s',
+                    datefmt='%d/%m/%Y %H:%M:%S',
+                    level=logging.DEBUG)
 
 
 @app.after_request
@@ -41,6 +48,7 @@ def astrograph_brightness_curve():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
+            logging.error("brightness_curve: no file attached")
             flash('No file part')
             return redirect(request.url)
         file = request.files['file']
@@ -48,13 +56,11 @@ def astrograph_brightness_curve():
         # submit an empty part without filename
         if file.filename == '':
             flash('No selected file')
+            logging.error("brightness_curve: empty or invalid file attached")
             return redirect(request.url)
         if file and allowed_file(file.filename):
             info = json.loads(request.form.get('parameters'))
-            # file_id = str(uuid.uuid4())
-            # file_extension = os.path.splitext(file.filename)[1][1:].strip()
-            # filename = file_id + '.' + file_extension
-            # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
             reference = Point(info['reference']['x'],
                               info['reference']['y'],
                               info['reference']['radius'])
@@ -67,29 +73,42 @@ def astrograph_brightness_curve():
                                                get_file_extension(file.filename) != 'tiff',
                                                reference,
                                                star)
+            logging.info("calculating...")
             brightness_curve.calculate()
+            logging.info("calculating done.")
+
+            if "preview" in info and info["preview"] is True:
+                logging.debug("brightness_curve: returning debug image")
+                jpeg = io.BytesIO()
+                imageio.imwrite(jpeg, brightness_curve.raw_data, format="JPEG")
+
+                proxy = io.BytesIO()
+                proxy.write(jpeg.getvalue())
+                # seeking was necessary. Python 3.5.2, Flask 0.12.2
+                proxy.seek(0)
+                jpeg.close()
+
+                return send_file(proxy,
+                                 mimetype='image/jpeg',
+                                 as_attachment=True,
+                                 attachment_filename='result.jpeg')
 
             if "csv" in info and info["csv"] is True:
+                logging.debug("brightness_curve: returning .csv")
                 # return send_file(brightness_curve.csv())
                 return Response(brightness_curve.csv(),
                                 mimetype="text/csv",
                                 headers={"Content-Disposition": "attachment;filename=test.csv"})
             else:
+                logging.debug("brightness_curve: returning .json")
                 return brightness_curve.json()
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+    return 'Invalid parameters.'
 
 
 @app.route('/preview', methods=['POST'])
 def tiff_converter():
     if 'file' not in request.files:
+        logging.error("brightness_curve: no file attached")
         flash('No file part')
         return redirect(request.url)
     file = request.files['file']
@@ -97,10 +116,13 @@ def tiff_converter():
     # submit an empty part without filename
     if file.filename == '':
         flash('No selected file')
+        logging.error("brightness_curve: empty or invalid file attached")
         return redirect(request.url)
     if file and allowed_file(file.filename):
+        logging.debug("Reading image")
         data = io.BytesIO(file.read())
 
+        logging.debug("Converting image")
         if get_file_extension(file.filename) == 'tiff':
             jpeg = convert_tiff(data)
         else:

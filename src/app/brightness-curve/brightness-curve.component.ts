@@ -36,10 +36,10 @@ export class BrightnessCurveComponent implements OnInit {
   constructor(private router: Router, private http: HttpClient, private deviceService: DeviceDetectorService) {
     if (environment.production) {
       this.reference = new Updateable(new Point(100, 100, 5), new Point(-1, -1, -1));
-      this.star = new Updateable(new Star(200, 200, 100, 5), new Star(-1, -1, -1, -1));
+      this.star = new Updateable(new Star(200, 200, 100, 2), new Star(-1, -1, -1, -1));
     } else {
       this.reference = new Updateable(new Point(820, 151, 5), new Point(-1, -1, -1));
-      this.star = new Updateable(new Star(698, 441, 100, 5), new Star(-1, -1, -1, -1));
+      this.star = new Updateable(new Star(698, 441, 100, 2), new Star(-1, -1, -1, -1));
     }
   }
 
@@ -49,17 +49,17 @@ export class BrightnessCurveComponent implements OnInit {
 
     this.downloadItems = 
       [{
-        label: 'Download Brightness Curve (.json)',
+        label: 'Brightness Curve (.json)',
         icon: 'pi pi-file',
         command: () => {
-          this.brightness_curve_json();
+          this.calculateAndDownload();
         }
       },
       {
-        label: 'Download Brightness Curve (.csv)',
+        label: 'Brightness Curve (.csv)',
         icon: 'pi pi-file-excel',
         command: () => {
-          this.brightness_curve_csv();
+          this.calculateAndDownload(1);
         }
       }];
   }
@@ -117,8 +117,8 @@ export class BrightnessCurveComponent implements OnInit {
     }
   }
 
-  handleFileInput(files: any, form: FileUpload) {
-    console.debug("handleFileInput(files:)", files, form);
+  openImage(files: any, form: FileUpload) {
+    console.debug("openImage(files:)", files, form);
 
     let self = this;
     this.file = files.files[0];
@@ -163,8 +163,26 @@ export class BrightnessCurveComponent implements OnInit {
     xhr.send(data);
   }
 
-  brightness_curve_csv() {
-    let parameters = { reference: this.reference.value, star: this.star.value, csv: true }
+  calculateAndDownload(option: number = 0) {
+    let type: string
+    let fileExtension: string
+    
+    switch (option) {
+      case 1:
+        type = 'text/csv';
+        fileExtension = '.csv';
+        break;
+      default:
+        type = 'text/json';
+        fileExtension = '.json';
+        break;
+    }
+
+    let parameters = {
+      reference: this.reference.value,
+      star: this.star.value,
+      csv: option == 1
+    }
     let json = JSON.stringify(parameters);
 
     var data = new FormData();
@@ -176,11 +194,11 @@ export class BrightnessCurveComponent implements OnInit {
 
     xhr.addEventListener("readystatechange", function() {
       if(this.readyState === 4) {
-        const blob = new Blob([this.responseText], { type: 'text/csv' });
+        const blob = new Blob([this.responseText], { type: type });
 
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.download = 'result.csv';
+        link.download = `result${fileExtension}`;
         link.click();
       }
     });
@@ -189,8 +207,8 @@ export class BrightnessCurveComponent implements OnInit {
     xhr.send(data);
   }
 
-  brightness_curve_json() {
-    let parameters = { reference: this.reference.value, star: this.star.value }
+  calculatePreview() {
+    let parameters = { reference: this.reference.value, star: this.star.value, preview: true }
     let json = JSON.stringify(parameters);
 
     var data = new FormData();
@@ -199,38 +217,29 @@ export class BrightnessCurveComponent implements OnInit {
 
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
+    xhr.responseType = 'blob'
 
+    let self = this;
     xhr.addEventListener("readystatechange", function() {
       if(this.readyState === 4) {
-        const blob = new Blob([this.responseText], { type: 'text/json' });
+        var urlCreator = window.webkitURL || window.URL;
+        var imageUrl = urlCreator.createObjectURL(this.response);
+        console.log('imageURL', imageUrl);
 
-        var link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = 'result.json';
-        link.click();
+        let image = new Image();
+        image.src = imageUrl;
+        image.onload = function() {
+          self.draw();
+          self.setLoading(false);
+        }
+
+        self.image = image;
+        self.forceDraw = true;
       }
     });
 
     xhr.open("POST", "http://localhost:40270/brightness_curve");
     xhr.send(data);
-  }
-
-  // Not working for some reason
-  brightness_curve() {
-    let parameters = { reference: this.reference.value, star: this.star.value }
-    let json = JSON.stringify(parameters);
-
-    var data = new FormData();
-    data.append('file', this.file, this.file.name);
-    data.append('parameters', json);
-
-    this.http
-    .post('http://localhost:5000/brightness_curve', data)
-    .subscribe(data => {
-      console.log("data", data);
-    }, error => {
-      console.error(error);
-    });
   }
 
   draw() {
@@ -261,7 +270,6 @@ export class BrightnessCurveComponent implements OnInit {
     // Draw star
     this.drawStar();
 
-    console.log("did draw");
     this.forceDraw = false;
     requestAnimationFrame(this.draw.bind(this));
   }
@@ -290,7 +298,7 @@ export class BrightnessCurveComponent implements OnInit {
     ctx.closePath();
 
     ctx.beginPath();
-    ctx.lineWidth = this.star.value.line.width;
+    ctx.lineWidth = 1 + this.star.value.line.width * 2;
 
     let x = this.star.value.x - this.reference.value.x;
     let y = this.star.value.y - this.reference.value.y;

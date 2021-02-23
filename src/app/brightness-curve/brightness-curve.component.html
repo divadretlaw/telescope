@@ -9,8 +9,9 @@
             <h1>Telescope</h1>
         </div>
         
-        <p-fileUpload #form [disabled]="isLoading" mode="basic" accept=".tiff, .cr2" customUpload="true" (uploadHandler)="handleFileInput($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
-        <!-- <input type="file" (change)="handleFileInput($event.target.files)"> -->
+        <p-fileUpload #form [disabled]="isLoading" mode="basic" accept=".tiff, .cr2" customUpload="true" (uploadHandler)="openImage($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
+        <!-- <input type="file" #form [disabled]="isLoading" accept=".tiff, .cr2" (change)="openImage($event.target.files, form)"> -->
+
         <div *ngIf="image">
             <div class="draw">
                 <div class="drawHeader">
@@ -28,8 +29,8 @@
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Radius</span>
                     <div>
-                        <p-inputNumber [disabled]="isLoading" name="Radius" [(ngModel)]="reference.value.radius" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
-                        <p-slider [disabled]="isLoading" [(ngModel)]="reference.value.radius" [min]="1" [max]="10"></p-slider>
+                        <p-inputNumber [disabled]="isLoading" name="Radius" [(ngModel)]="reference.value.radius" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                        <p-slider [disabled]="isLoading" [(ngModel)]="reference.value.radius" [min]="0" [max]="10"></p-slider>
                     </div>
                 </div>
             </div>
@@ -49,8 +50,8 @@
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Width</span>
                     <div>
-                        <p-inputNumber [disabled]="isLoading" name="Width" [(ngModel)]="star.value.line.width" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
-                        <p-slider [disabled]="isLoading" [(ngModel)]="star.value.line.width" [min]="1" [max]="10"></p-slider>
+                        <p-inputNumber [disabled]="isLoading" name="Width" [(ngModel)]="star.value.line.width" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                        <p-slider [disabled]="isLoading" [(ngModel)]="star.value.line.width" [min]="0" [max]="10"></p-slider>
                     </div>
                 </div>
                 <div class="p-inputgroup">
@@ -59,7 +60,8 @@
                 </div>
             </div>
             <div class="actions">
-                <p-splitButton [disabled]="isLoading" label="Download Brightness Curve (.csv)" icon="pi pi-download" (onClick)="brightness_curve_csv()" [model]="downloadItems"></p-splitButton>
+                <p-splitButton [disabled]="isLoading" label="Download Brightness Curve" icon="pi pi-download" (onClick)="calculateAndDownload(1)" [model]="downloadItems"></p-splitButton>
+                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="DEBUG: Show value reading" icon="pi pi-cog" (click)="calculatePreview()"></button>
             </div>
         </div>
     </div>

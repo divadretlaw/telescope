@@ -12,7 +12,7 @@ class RGB:
         self.blue = blue
 
     def string(self):
-        return f'{self.red.string()},{self.green.string()},{self.blue.string()}'
+        return f'{self.red.string()};{self.green.string()};{self.blue.string()}'
 
     def dictionary(self):
         return {

@@ -1,6 +1,8 @@
 import io
 import json
 import rawpy
+import numpy
+import logging
 
 from io import BytesIO
 from PIL import Image
@@ -11,7 +13,7 @@ from model.data import Data
 from model.point import Point
 from model.star import Star
 
-import numpy
+import points
 
 
 class BrightnessCurve:
@@ -21,6 +23,7 @@ class BrightnessCurve:
     data: [Data] or [RGB]
 
     def __init__(self, file: BytesIO, is_raw: bool, reference: Point, star: Star):
+        logging.info("__init__")
         self.file = file
         self.is_raw = is_raw
 
@@ -30,16 +33,18 @@ class BrightnessCurve:
         self.data = []
 
         if is_raw:
+            logging.info("Parsing RAW image")
             raw_image = rawpy.imread(self.file)
-            print(max(raw_image.raw_image[0]))
-            print(numpy.amax(raw_image.raw_image))
-            # self.raw_data = raw_image.raw_image
+            sizes = raw_image.sizes
+            self.width = sizes.width
+            self.height = sizes.height
+            logging.info("Postprocess image")
             self.raw_data = raw_image.postprocess(gamma=(1, 1),
                                                   no_auto_bright=True,
-                                                  use_camera_wb=True,
-                                                  output_bps=16)
+                                                  use_camera_wb=True)
             self.raw_image = raw_image
         else:
+            logging.info("Parsing TIFF image")
             image = Image.open(self.file)
             self.raw_data = numpy.asarray(image)
 
@@ -54,10 +59,10 @@ class BrightnessCurve:
 
     def string(self):
         result = """
-Center, {center_x}, {center_y}, {center_radius}
-Star, {star_x}, {star_y}, {star_radius}, {star_length}
+Center;{center_x};{center_y};{center_radius}
+Star;{star_x};{star_y};{star_radius};{star_length}
 
-index,average,median,min,max
+index;average;median;min;max
 """.format(center_x=self.reference.x,
            center_y=self.reference.y,
            center_radius=self.reference.radius,
@@ -77,35 +82,43 @@ index,average,median,min,max
         return json.dumps(self.dictionary())
 
     def calculate(self):
-        # TODO: calculate pixels path to read
-        path = []
-        for i in range(100):
-            path.append((i, i))
+        logging.debug("calculate")
+        path = points.path(self.reference, self.star, self.star.line, self.width, self.height)
+        logging.debug("calculated path=%d" % len(path))
 
-        for index, path in enumerate(path):
-            self.data.append(self.calculate_for(index, path[0], path[1]))
+        for index, entry in enumerate(path):
+            data = self.calculate_for(index, entry.x, entry.y)
+            self.data.append(data)
+
+        # DEBUG: Draw the reference in green
+        for point in points.neighbours(self.reference, self.width, self.height):
+            self.raw_data[point.y][point.x] = [0, 255, 0]
+
+        # DEBUG: Draw the start in red
+        for index, entry in enumerate(path):
+            origin = Point(entry.x, entry.y, self.star.line.width)
+            for point in points.neighbours(origin, self.width, self.height):
+                self.raw_data[point.y][point.x] = [255, 0, 0]
+
+        # DEBUG: Draw the start in blue
+        for point in points.neighbours(self.star, self.width, self.height):
+            self.raw_data[point.y][point.x] = [0, 0, 255]
 
         self.raw_image.close()
 
     def calculate_for(self, index, x, y):
-        value = self.raw_data[x][y]
-
-        # Fix for RGB images
-        if isinstance(value, numpy.ndarray):
-            red = self.calculate_for_channel(index, value[0])
-            green = self.calculate_for_channel(index, value[1])
-            blue = self.calculate_for_channel(index, value[2])
-            return RGB(red, green, blue).merge()
-        else:
-            return self.calculate_for_channel(index, value)
-
-    def calculate_for_channel(self, index, value):
-        # TODO: Get Neighbours within radius self.star.width
-        neighbours = [value]
+        origin = Point(x, y, self.star.line.width)
+        neighbours = []
+        for point in points.neighbours(origin, self.width, self.height):
+            value = self.raw_data[point.y][point.x]
+            if isinstance(value, numpy.ndarray):
+                neighbours.append(mean(value))
+            else:
+                neighbours.append(value)
 
         min_value = min(neighbours)
         max_value = max(neighbours)
         average_value = mean(neighbours)
         median_value = median(neighbours)
 
-        return Data(index, float(average_value), float(median_value), float(min_value), float(max_value))
+        return Data(index, float(average_value), float(median_value), float(min_value), float(max_value), origin)
