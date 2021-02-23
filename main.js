@@ -1,12 +1,11 @@
 const {app, BrowserWindow} = require('electron');
 
 const path = require("path");
-
+const spawn = require('child_process').spawn;
 // let { isPackaged } = require('electron-is-packaged').isPackaged;
 
 let mainWindow;
 
-let {PythonShell} = require('python-shell');
 let rocketLaunched = false;
 
 function createWindow() {
@@ -22,23 +21,19 @@ function createWindow() {
     })
 
     mainWindow.loadURL(`file://${path.join(__dirname, 'dist/index.html')}`);
-    // mainWindow.loadURL(url.format({   pathname: path.join(__dirname,
-    // 'dist/index.html'),   protocol: 'file:',   slashes: true })); Open the
     // DevTools. mainWindow.webContents.openDevTools()
 
-    const rootPath = app
-        .getAppPath()
-        .replace('app.asar', '')
+    const rootPath = app.getAppPath().replace('app.asar', '')
+    const resourcesPath = path.join(rootPath, 'resources');
 
     if (!rocketLaunched) {
-        PythonShell.run('rocket.py', {
-            scriptPath: path.join(rootPath, 'astrograph')
-        }, function (error) {
-            if (error) {
-                console.error(error);
-            }
-            console.log('rocket.py landed.');
-            rocketLaunched = false;
+        console.log('rootPath', resourcesPath);
+        rocket = spawn(path.join(resourcesPath, 'rocket/rocket'))
+        rocket.stdout.on( 'data', data => {
+            console.log(`rocket: ${data}`);
+        });
+        rocket.stderr.on( 'data', data => {
+            console.error(`rocket: ${data}`);
         });
         rocketLaunched = true;
     }
@@ -59,3 +54,9 @@ app.on('activate', function () {
     if (mainWindow === null) 
         createWindow()
 })
+
+app.on('before-quit', function () {
+    if (rocket !== undefined) {
+        rocket.kill();
+    }
+});
