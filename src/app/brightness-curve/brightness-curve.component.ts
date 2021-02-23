@@ -159,7 +159,7 @@ export class BrightnessCurveComponent implements OnInit {
       }
     });
 
-    xhr.open("POST", "http://localhost:5000/preview");
+    xhr.open("POST", "http://localhost:40270/preview");
     xhr.send(data);
   }
 
@@ -185,7 +185,7 @@ export class BrightnessCurveComponent implements OnInit {
       }
     });
 
-    xhr.open("POST", "http://localhost:5000/brightness_curve");
+    xhr.open("POST", "http://localhost:40270/brightness_curve");
     xhr.send(data);
   }
 
@@ -211,7 +211,7 @@ export class BrightnessCurveComponent implements OnInit {
       }
     });
 
-    xhr.open("POST", "http://localhost:5000/brightness_curve");
+    xhr.open("POST", "http://localhost:40270/brightness_curve");
     xhr.send(data);
   }
 
