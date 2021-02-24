@@ -18,6 +18,7 @@ import { MenuItem } from 'primeng/api';
   styleUrls: ['./brightness-curve.component.css']
 })
 export class BrightnessCurveComponent implements OnInit {
+  loadingReason = '';
   isLoading = false;
 
   @ViewChild('universe', { static: true, read: ElementRef }) canvas: ElementRef;
@@ -65,6 +66,14 @@ export class BrightnessCurveComponent implements OnInit {
           this.calculateAndDownload(1);
         }
       }];
+
+      let self = this;
+      this.hasRocketLaunched(function () {
+        console.log('Rocket is launched...');
+      }, function() {
+        console.log('Rocket never launched or has crashed...');
+        self.router.navigateByUrl("/error?reason=rocket");
+      });
   }
 
   ngAfterViewInit(): void {
@@ -111,8 +120,22 @@ export class BrightnessCurveComponent implements OnInit {
     });
   }
 
-  setLoading(loading: boolean) {
+  private hasRocketLaunched(ifOnline, ifOffline) {
+    let image = new Image();
+    image.onload = function()
+    {
+        ifOnline && ifOnline.constructor == Function && ifOnline();
+    };
+    image.onerror = function()
+    {
+        ifOffline && ifOffline.constructor == Function && ifOffline();
+    };
+    image.src = `http://localhost:40270/status.gif?${Date.now()}`;        
+  }
+
+  setLoading(loading: boolean, reason: string = null) {
     if (loading) {
+      this.loadingReason = reason;
       this.isLoading = true;
       document.getElementById("main").className = 'modal-open';
     } else {
@@ -135,7 +158,7 @@ export class BrightnessCurveComponent implements OnInit {
   }
 
   loadJpegPreview() {
-    this.setLoading(true);
+    this.setLoading(true, 'Generating preview');
 
     var data = new FormData();
     data.append("file", this.file);
@@ -175,6 +198,8 @@ export class BrightnessCurveComponent implements OnInit {
   }
 
   calculateAndDownload(option: number = 0) {
+    this.setLoading(true, 'Calculating brightness curve');
+
     let type: string
     let fileExtension: string
     
@@ -203,6 +228,7 @@ export class BrightnessCurveComponent implements OnInit {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
 
+    let self = this;
     xhr.addEventListener("readystatechange", function() {
       if(this.readyState === 4) {
         const blob = new Blob([this.responseText], { type: type });
@@ -211,6 +237,8 @@ export class BrightnessCurveComponent implements OnInit {
         link.href = window.URL.createObjectURL(blob);
         link.download = `result${fileExtension}`;
         link.click();
+        
+        self.setLoading(false);
       }
     });
 

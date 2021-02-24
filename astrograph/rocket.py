@@ -2,19 +2,18 @@ import io
 import json
 import imageio
 import logging
-
 from flask import Flask, flash, request, redirect, Response, send_file
 
 from brightness_curve import BrightnessCurve
 from model.point import Point
 from model.star import Star
 from converter import convert_tiff, convert_raw
+from base64 import b64decode
 
 ALLOWED_EXTENSIONS = {'tiff', 'cr2'}
 
 app = Flask(__name__)
 
-print(logging.BASIC_FORMAT)
 logging.basicConfig(format='[%(asctime)s] %(levelname)-5s in %(module)s: %(message)s',
                     datefmt='%d/%m/%Y %H:%M:%S',
                     level=logging.DEBUG)
@@ -39,8 +38,22 @@ def allowed_file(filename):
 
 
 @app.route('/', methods=['GET'])
-def status():
+def rocket():
     return "🚀"
+
+
+@app.route('/status.gif', methods=['GET'])
+def status():
+    logging.debug("Check status")
+    gif = io.BytesIO(b64decode("R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="))
+
+    proxy = io.BytesIO()
+    proxy.write(gif.getvalue())
+    # seeking was necessary. Python 3.5.2, Flask 0.12.2
+    proxy.seek(0)
+    gif.close()
+
+    return send_file(proxy, mimetype='image/gif', as_attachment=False, attachment_filename='status.gif')
 
 
 @app.route('/brightness_curve', methods=['GET', 'POST'])
@@ -106,9 +119,9 @@ def astrograph_brightness_curve():
 
 
 @app.route('/preview', methods=['POST'])
-def tiff_converter():
+def preview_converter():
     if 'file' not in request.files:
-        logging.error("brightness_curve: no file attached")
+        logging.error("preview_converter: no file attached")
         flash('No file part')
         return redirect(request.url)
     file = request.files['file']
@@ -116,7 +129,7 @@ def tiff_converter():
     # submit an empty part without filename
     if file.filename == '':
         flash('No selected file')
-        logging.error("brightness_curve: empty or invalid file attached")
+        logging.error("preview_converter: empty or invalid file attached")
         return redirect(request.url)
     if file and allowed_file(file.filename):
         logging.debug("Reading image")

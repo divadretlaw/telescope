@@ -1,6 +1,6 @@
 <div class="loadingOverlay" *ngIf="isLoading">
     <p-progressSpinner styleClass="custom-spinner" strokeWidth="5"></p-progressSpinner>
-    <p>Generating preview</p>
+    <p>{{ loadingReason }}</p>
 </div>
 <main id="main">
     <div class="sidebar p-grid p-fluid">
@@ -61,7 +61,7 @@
             </div>
             <div class="actions">
                 <p-splitButton [disabled]="isLoading" label="Download Brightness Curve" icon="pi pi-download" (onClick)="calculateAndDownload(1)" [model]="downloadItems"></p-splitButton>
-                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="DEBUG: Show value reading" icon="pi pi-cog" (click)="calculatePreview()"></button>
+                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="DEBUG: Show value reading" icon="pi pi-eye" (click)="calculatePreview()"></button>
             </div>
         </div>
     </div>
@@ -69,6 +69,6 @@
     <div class="controls">
         <button [disabled]="isLoading || image == null || !scale.canZoomIn()" pButton type="button" icon="pi pi-plus" class="p-button-rounded" (click)="zoomIn()"></button>
         <button [disabled]="isLoading || image == null || !scale.canZoomOut()" pButton type="button" icon="pi pi-minus" class="p-button-rounded" (click)="zoomOut()"></button>
-        <button [disabled]="isLoading || image == null" pButton type="button" icon="pi pi-eye" class="p-button-rounded p-button-danger" (click)="zoomReset()"></button>
+        <button [disabled]="isLoading || image == null" pButton type="button" icon="pi pi-refresh" class="p-button-rounded p-button-danger" (click)="zoomReset()"></button>
     </div>
 </main>
