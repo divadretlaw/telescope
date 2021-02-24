@@ -50,12 +50,14 @@ canvas {
 	flex-direction: row;
 	flex-wrap: nowrap;
 	justify-content: space-between;
-	align-items: center;
+	align-items: stretch;
 	align-content: stretch;
+    align-self: auto;
 }
 
-.drawHeader h2 {
+.drawHeader button {
     margin-left: 0.5em;
+    max-height: 32px;
 }
 
 .draw .p-inputgroup {
@@ -143,4 +145,22 @@ canvas {
 main.modal-open {
     position: fixed;
     overflow: hidden;
+}
+
+.controls {
+    float: right;
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+
+    display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: flex-end;
+	align-content: center;
+}
+
+.controls > * {
+    margin: 0.5em;
 }

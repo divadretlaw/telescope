@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Point } from '../model/point';
 import { Star } from '../model/star';
 import { Updateable } from '../model/updateable';
+import { Scale } from '../model/scale';
 
 import { environment } from '../../environments/environment';
 import { DeviceDetectorService } from 'ngx-device-detector';
@@ -32,6 +33,8 @@ export class BrightnessCurveComponent implements OnInit {
 
   private forceDraw = false;
   private mouse = { down: false, selected: null };
+
+  scale = new Scale();
 
   constructor(private router: Router, private http: HttpClient, private deviceService: DeviceDetectorService) {
     if (environment.production) {
@@ -77,6 +80,7 @@ export class BrightnessCurveComponent implements OnInit {
 
       let mouseX = e.offsetX * xFactor;
       let mouseY = e.offsetY * yFactor;
+      console.log('mousedown', mouseX, mouseY);
 
       if (this.hitTest(this.reference.value, mouseX, mouseY)) {
         this.mouse.selected = this.reference.value;
@@ -96,8 +100,8 @@ export class BrightnessCurveComponent implements OnInit {
       }
       
       let size = this.canvas.nativeElement.getBoundingClientRect();
-      let xFactor = this.canvas.nativeElement.width / size.width;
-      let yFactor = this.canvas.nativeElement.height / size.height;
+      let xFactor = this.canvas.nativeElement.width / (size.width * this.scale.factor());
+      let yFactor = this.canvas.nativeElement.height / (size.height * this.scale.factor());
 
       let mouseX = e.offsetX * xFactor;
       let mouseY = e.offsetY * yFactor;
@@ -150,8 +154,15 @@ export class BrightnessCurveComponent implements OnInit {
         let image = new Image();
         image.src = imageUrl;
         image.onload = function() {
+          let x = image.width / 2
+          let y = image.height / 2
+          self.reference = new Updateable(new Point(x, y, self.reference.value.radius),
+            new Point(-1, -1, -1));
+          self.star = new Updateable(new Star(x, y + Math.min(100, y / 2), self.star.value.line.length, self.star.value.line.width),
+            new Star(-1, -1, -1, -1));
           self.draw();
           self.setLoading(false);
+          self.focusOn(self.reference.value)
         }
 
         self.image = image;
@@ -256,11 +267,13 @@ export class BrightnessCurveComponent implements OnInit {
     this.canvas.nativeElement.width = this.image.width;
     this.canvas.nativeElement.height = this.image.height;
 
-    this.canvas.nativeElement.style = `min-width: ${this.image.width}px; min-height: ${this.image.height}px`
+    let scaleFactor = Math.pow(this.scale.factor(), 2);
+    this.canvas.nativeElement.style = `min-width: ${this.image.width * scaleFactor}px; min-height: ${this.image.height * scaleFactor}px`;
 
     this.context.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
 
-    let size = this.canvas.nativeElement.getBoundingClientRect();
+    // let size = this.canvas.nativeElement.getBoundingClientRect();
+    this.context.scale(this.scale.factor(), this.scale.factor());
 
     // Draw Image
     this.context.drawImage(this.image, 0, 0, this.image.width, this.image.height,
@@ -274,12 +287,28 @@ export class BrightnessCurveComponent implements OnInit {
     requestAnimationFrame(this.draw.bind(this));
   }
 
+  zoomIn() {
+    this.scale.zoomIn();
+    this.forceDraw = true;
+  }
+
+  zoomOut() {
+    this.scale.zoomOut();
+    this.forceDraw = true;
+  }
+
+  zoomReset() {
+    this.scale.reset();
+    this.forceDraw = true;
+  }
+
   private drawReferencePoint() {
     let ctx = this.context;
+    let scaleFactor = this.scale.inverseFactor();
 
     ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.arc(this.reference.value.x, this.reference.value.y, this.reference.value.radius, 0, 2 * Math.PI);
+    ctx.lineWidth = 2 * scaleFactor;
+    ctx.arc(this.reference.value.x, this.reference.value.y, this.reference.value.radius * scaleFactor, 0, 2 * Math.PI);
     ctx.strokeStyle = this.reference.value.color;
     ctx.stroke();
     ctx.closePath();
@@ -289,10 +318,11 @@ export class BrightnessCurveComponent implements OnInit {
 
   private drawStar() {
     let ctx = this.context;
-    
+    let scaleFactor = this.scale.inverseFactor();
+
     ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.arc(this.star.value.x, this.star.value.y, this.star.value.radius, 0, 2 * Math.PI);
+    ctx.lineWidth = 2 * scaleFactor;
+    ctx.arc(this.star.value.x, this.star.value.y, this.star.value.radius * scaleFactor, 0, 2 * Math.PI);
     ctx.strokeStyle = this.star.value.color;
     ctx.stroke();
     ctx.closePath();
@@ -330,5 +360,23 @@ export class BrightnessCurveComponent implements OnInit {
     }
     this.context.closePath();
     return returnValue;
+  }
+
+  private focusOn(point: Point) {
+    // TODO: Make focus work on zoom
+    this.scale.reset();
+
+    let width = this.image.width;
+    let height = this.image.height;
+
+    const offsetX = (window.innerWidth - 366 || 0) / 2;
+    const offsetY = (window.innerHeight || 0) / 2;
+
+    let scrollLeft = Math.max(0, (point.x / width * width) - offsetX);
+    let scrollTop = Math.max(0, (point.y / height * height) - offsetY);
+
+    document.documentElement.scrollLeft = scrollLeft;
+    document.documentElement.scrollTop = scrollTop;
+    this.forceDraw = true;
   }
 }

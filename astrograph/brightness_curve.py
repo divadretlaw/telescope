@@ -46,7 +46,10 @@ class BrightnessCurve:
         else:
             logging.info("Parsing TIFF image")
             image = Image.open(self.file)
-            self.raw_data = numpy.asarray(image)
+            raw_image = numpy.asarray(image)
+            self.width = len(raw_image[0])
+            self.height = len(raw_image)
+            self.raw_data = raw_image
 
         # print(self.raw_data)
 
@@ -90,21 +93,22 @@ index;average;median;min;max
             data = self.calculate_for(index, entry.x, entry.y)
             self.data.append(data)
 
-        # DEBUG: Draw the reference in green
-        for point in points.neighbours(self.reference, self.width, self.height):
-            self.raw_data[point.y][point.x] = [0, 255, 0]
+        if self.is_raw:
+            # DEBUG: Draw the reference in green
+            for point in points.neighbours(self.reference, self.width, self.height):
+                self.raw_data[point.y][point.x] = [0, 255, 0]
 
-        # DEBUG: Draw the start in red
-        for index, entry in enumerate(path):
-            origin = Point(entry.x, entry.y, self.star.line.width)
-            for point in points.neighbours(origin, self.width, self.height):
-                self.raw_data[point.y][point.x] = [255, 0, 0]
+            # DEBUG: Draw the start in red
+            for index, entry in enumerate(path):
+                origin = Point(entry.x, entry.y, self.star.line.width)
+                for point in points.neighbours(origin, self.width, self.height):
+                    self.raw_data[point.y][point.x] = [255, 0, 0]
 
-        # DEBUG: Draw the start in blue
-        for point in points.neighbours(self.star, self.width, self.height):
-            self.raw_data[point.y][point.x] = [0, 0, 255]
+            # DEBUG: Draw the start in blue
+            for point in points.neighbours(self.star, self.width, self.height):
+                self.raw_data[point.y][point.x] = [0, 0, 255]
 
-        self.raw_image.close()
+            self.raw_image.close()
 
     def calculate_for(self, index, x, y):
         origin = Point(x, y, self.star.line.width)
