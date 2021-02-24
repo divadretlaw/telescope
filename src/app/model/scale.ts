@@ -3,7 +3,7 @@ export class Scale {
     private scales: number[]
 
     constructor() {
-        this.scales = [0.66, 1, 1.25, 1.5];
+        this.scales = [0.25, 0.5, 0.75, 1, 1.5, 2, 2.5];
         this.reset();
     }
 
@@ -12,7 +12,7 @@ export class Scale {
     }
 
     public inverseFactor() {
-        let scaleFactor = Math.pow(1 / this.factor(), 2);
+        let scaleFactor = 1 / this.factor();
         if (scaleFactor < 1) {
           scaleFactor = 1;
         }

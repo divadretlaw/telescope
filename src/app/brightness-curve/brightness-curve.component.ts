@@ -264,20 +264,19 @@ export class BrightnessCurveComponent implements OnInit {
       return;
     }
 
-    this.canvas.nativeElement.width = this.image.width;
-    this.canvas.nativeElement.height = this.image.height;
+    let scaleFactor = this.scale.factor();
 
-    let scaleFactor = Math.pow(this.scale.factor(), 2);
-    this.canvas.nativeElement.style = `min-width: ${this.image.width * scaleFactor}px; min-height: ${this.image.height * scaleFactor}px`;
-
+    this.canvas.nativeElement.width = this.image.width * scaleFactor;
+    this.canvas.nativeElement.height = this.image.height * scaleFactor;
     this.context.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+
+    this.canvas.nativeElement.style = `min-width: ${this.image.width * scaleFactor}px; min-height: ${this.image.height * scaleFactor}px`;
 
     // let size = this.canvas.nativeElement.getBoundingClientRect();
     this.context.scale(this.scale.factor(), this.scale.factor());
 
     // Draw Image
-    this.context.drawImage(this.image, 0, 0, this.image.width, this.image.height,
-      0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+    this.context.drawImage(this.image, 0, 0, this.image.width, this.image.height);
     // Draw reference point
     this.drawReferencePoint();
     // Draw star
@@ -289,16 +288,19 @@ export class BrightnessCurveComponent implements OnInit {
 
   zoomIn() {
     this.scale.zoomIn();
+    this.focusOn(this.reference.value);
     this.forceDraw = true;
   }
 
   zoomOut() {
     this.scale.zoomOut();
+    this.focusOn(this.reference.value);
     this.forceDraw = true;
   }
 
   zoomReset() {
     this.scale.reset();
+    this.focusOn(this.reference.value);
     this.forceDraw = true;
   }
 
@@ -340,7 +342,7 @@ export class BrightnessCurveComponent implements OnInit {
     if (y <= 0) {
       startAngle *= -1;
     }
-    let endAngle= startAngle - arc;
+    let endAngle = startAngle - arc;
 
     ctx.arc(this.reference.value.x, this.reference.value.y, radius, startAngle, endAngle, true);
 
@@ -364,19 +366,24 @@ export class BrightnessCurveComponent implements OnInit {
 
   private focusOn(point: Point) {
     // TODO: Make focus work on zoom
-    this.scale.reset();
+    // this.scale.reset();
 
     let width = this.image.width;
     let height = this.image.height;
 
+    let scaleFactor = this.scale.factor();
+
     const offsetX = (window.innerWidth - 366 || 0) / 2;
     const offsetY = (window.innerHeight || 0) / 2;
 
-    let scrollLeft = Math.max(0, (point.x / width * width) - offsetX);
-    let scrollTop = Math.max(0, (point.y / height * height) - offsetY);
+    let scrollLeft = Math.max(0, (scaleFactor * point.x / width * width) - scaleFactor * offsetX);
+    let scrollTop = Math.max(0, (scaleFactor * point.y / height * height) - scaleFactor * offsetY);
 
     document.documentElement.scrollLeft = scrollLeft;
     document.documentElement.scrollTop = scrollTop;
+
+    console.debug("scrollTo", "center =", document.documentElement.scrollLeft + offsetX, document.documentElement.scrollTop + offsetY)
+
     this.forceDraw = true;
   }
 }
