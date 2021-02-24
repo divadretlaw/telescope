@@ -16,7 +16,7 @@
             <div class="draw">
                 <div class="drawHeader">
                     <p-colorPicker [disabled]="isLoading" [(ngModel)]="reference.value.color"></p-colorPicker>
-                    <button [disabled]="isLoading || image == null" pButton type="button" class="p-button-help" label="Reference" (click)="focusOn(reference.value)"></button>
+                    <button [disabled]="isLoading || image == null" pButton type="button" class="p-button-help" label="Reference" (click)="focusOn(reference.value, true)"></button>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">X</span>
@@ -37,7 +37,7 @@
             <div class="draw">
                 <div class="drawHeader">
                     <p-colorPicker [disabled]="isLoading" [(ngModel)]="star.value.color"></p-colorPicker>
-                    <button [disabled]="isLoading || image == null" pButton type="button" class="p-button-help" label="Star" (click)="focusOn(star.value)"></button>
+                    <button [disabled]="isLoading || image == null" pButton type="button" class="p-button-help" label="Star" (click)="focusOn(star.value, true)"></button>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">X</span>

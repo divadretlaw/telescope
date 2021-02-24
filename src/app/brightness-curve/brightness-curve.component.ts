@@ -185,7 +185,7 @@ export class BrightnessCurveComponent implements OnInit {
             new Star(-1, -1, -1, -1));
           self.draw();
           self.setLoading(false);
-          self.focusOn(self.reference.value)
+          self.focusOn(self.reference.value, false)
         }
 
         self.image = image;
@@ -316,20 +316,17 @@ export class BrightnessCurveComponent implements OnInit {
 
   zoomIn() {
     this.scale.zoomIn();
-    this.focusOn(this.reference.value);
-    this.forceDraw = true;
+    this.focusOnReference();
   }
 
   zoomOut() {
     this.scale.zoomOut();
-    this.focusOn(this.reference.value);
-    this.forceDraw = true;
+    this.focusOnReference();
   }
 
   zoomReset() {
     this.scale.reset();
-    this.focusOn(this.reference.value);
-    this.forceDraw = true;
+    this.focusOnReference();
   }
 
   private drawReferencePoint() {
@@ -392,10 +389,17 @@ export class BrightnessCurveComponent implements OnInit {
     return returnValue;
   }
 
-  private focusOn(point: Point) {
-    // TODO: Make focus work on zoom
-    // this.scale.reset();
+  private focusOnReference(redo: boolean = true) {
+    let self = this;
+    setTimeout(function () {
+      self.focusOn(self.reference.value, false);
+      if (redo) {
+        self.focusOnReference(false);
+      }
+    }, 100);
+  }
 
+  private focusOn(point: Point, animated) {
     let width = this.image.width;
     let height = this.image.height;
 
@@ -404,14 +408,52 @@ export class BrightnessCurveComponent implements OnInit {
     const offsetX = (window.innerWidth - 366 || 0) / 2;
     const offsetY = (window.innerHeight || 0) / 2;
 
-    let scrollLeft = Math.max(0, (scaleFactor * point.x / width * width) - scaleFactor * offsetX);
-    let scrollTop = Math.max(0, (scaleFactor * point.y / height * height) - scaleFactor * offsetY);
+    let scrollLeft = Math.max(0, (scaleFactor * point.x / width * width) - offsetX);
+    let scrollTop = Math.max(0, (scaleFactor * point.y / height * height) - offsetY);
 
-    document.documentElement.scrollLeft = scrollLeft;
-    document.documentElement.scrollTop = scrollTop;
+    if (animated) {
+      this.scrollTo(document.documentElement, scrollTop, scrollLeft, 300);
+    } else {
+      document.documentElement.scrollLeft = scrollLeft;
+      document.documentElement.scrollTop = scrollTop;
+    }
 
-    console.debug("scrollTo", "center =", document.documentElement.scrollLeft + offsetX, document.documentElement.scrollTop + offsetY)
+    console.debug("scrollTo", "center =", scrollLeft, scrollTop, 'scale = ', scaleFactor)
 
     this.forceDraw = true;
+  }
+
+  private scrollTo(element, toTop, toLeft, duration) {
+    let startTop = element.scrollTop;
+    let changeTop = toTop - startTop;
+
+    let startLeft = element.scrollLeft;
+    let changeLeft = toLeft - startLeft;
+
+    let currentTime = 0;
+    let increment = 20;
+
+    let self = this;
+
+    let easeInOutQuad = function(t, b, c, d) {
+      t /= d/2;
+      if (t < 1) return c/2*t*t + b;
+      t--;
+      return -c/2 * (t*(t-2) - 1) + b;
+    };
+
+    let animateScroll = function() {      
+        currentTime += increment;
+        
+        element.scrollTop = easeInOutQuad(currentTime, startTop, changeTop, duration);;
+        element.scrollLeft = easeInOutQuad(currentTime, startLeft, changeLeft, duration);;
+
+        if(currentTime < duration) {
+          setTimeout(animateScroll, increment);
+        }
+        
+        self.forceDraw = true;
+    };
+    animateScroll();
   }
 }
