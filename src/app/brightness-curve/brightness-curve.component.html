@@ -12,63 +12,64 @@
         <p-fileUpload #form [disabled]="isLoading" mode="basic" accept=".tiff, .cr2" customUpload="true" (uploadHandler)="openImage($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
         <!-- <input type="file" #form [disabled]="isLoading" accept=".tiff, .cr2" (change)="openImage($event.target.files, form)"> -->
 
-        <div *ngIf="image">
+        <div *ngIf="data.image">
             <div class="draw">
                 <div class="drawHeader">
-                    <p-colorPicker [disabled]="isLoading" [(ngModel)]="reference.value.color"></p-colorPicker>
-                    <button [disabled]="isLoading || image == null" pButton type="button" class="p-button-help" label="Reference" (click)="focusOn(reference.value, true)"></button>
+                    <p-colorPicker [disabled]="isLoading" [(ngModel)]="data.reference.value.color"></p-colorPicker>
+                    <button [disabled]="isLoading || data.image == null" pButton type="button" class="p-button-help" label="Reference" (click)="focusOn(data.reference.value, true)"></button>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">X</span>
-                    <p-inputNumber [disabled]="isLoading" name="X" [(ngModel)]="reference.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="X" [(ngModel)]="data.reference.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Y</span>
-                    <p-inputNumber [disabled]="isLoading" name="Y" [(ngModel)]="reference.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="Y" [(ngModel)]="data.reference.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Radius</span>
                     <div>
-                        <p-inputNumber [disabled]="isLoading" name="Radius" [(ngModel)]="reference.value.radius" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
-                        <p-slider [disabled]="isLoading" [(ngModel)]="reference.value.radius" [min]="0" [max]="10"></p-slider>
+                        <p-inputNumber [disabled]="isLoading" name="Radius" [(ngModel)]="data.reference.value.radius" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                        <p-slider [disabled]="isLoading" [(ngModel)]="data.reference.value.radius" [min]="0" [max]="10"></p-slider>
                     </div>
                 </div>
             </div>
             <div class="draw">
                 <div class="drawHeader">
-                    <p-colorPicker [disabled]="isLoading" [(ngModel)]="star.value.color"></p-colorPicker>
-                    <button [disabled]="isLoading || image == null" pButton type="button" class="p-button-help" label="Star" (click)="focusOn(star.value, true)"></button>
+                    <p-colorPicker [disabled]="isLoading" [(ngModel)]="data.star.value.color"></p-colorPicker>
+                    <button [disabled]="isLoading || data.image == null" pButton type="button" class="p-button-help" label="Star" (click)="focusOn(data.star.value, true)"></button>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">X</span>
-                    <p-inputNumber [disabled]="isLoading" name="X" [(ngModel)]="star.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="X" [(ngModel)]="data.star.value.x" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Y</span>
-                    <p-inputNumber [disabled]="isLoading" name="Y" [(ngModel)]="star.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="Y" [(ngModel)]="data.star.value.y" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Width</span>
                     <div>
-                        <p-inputNumber [disabled]="isLoading" name="Width" [(ngModel)]="star.value.line.width" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
-                        <p-slider [disabled]="isLoading" [(ngModel)]="star.value.line.width" [min]="0" [max]="10"></p-slider>
+                        <p-inputNumber [disabled]="isLoading" name="Width" [(ngModel)]="data.star.value.line.width" mode="decimal" [showButtons]="true" [min]="0"></p-inputNumber>
+                        <p-slider [disabled]="isLoading" [(ngModel)]="data.star.value.line.width" [min]="0" [max]="10"></p-slider>
                     </div>
                 </div>
                 <div class="p-inputgroup">
                     <span class="p-inputgroup-addon">Length</span>
-                    <p-inputNumber [disabled]="isLoading" name="Length" [(ngModel)]="star.value.line.length" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
+                    <p-inputNumber [disabled]="isLoading" name="Length" [(ngModel)]="data.star.value.line.length" mode="decimal" [showButtons]="true" [min]="1"></p-inputNumber>
                 </div>
             </div>
             <div class="actions">
-                <p-splitButton [disabled]="isLoading" label="Download Brightness Curve" icon="pi pi-download" (onClick)="calculateAndDownload(1)" [model]="downloadItems"></p-splitButton>
-                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="DEBUG: Show value reading" icon="pi pi-eye" (click)="calculatePreview()"></button>
+                <button [disabled]="isLoading" pButton type="button" label="Show Brightness Curve" icon="pi pi-chart-line" (click)="calculate(false)"></button>
+                <p-splitButton [disabled]="isLoading" label="Download Brightness Curve" icon="pi pi-download" (onClick)="calculate(true, calculateOptions.CSV)" [model]="downloadItems"></p-splitButton>
+                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="Draw Values Read" icon="pi pi-eye" (click)="calculate(false, calculateOptions.JPEG_Preview)"></button>
             </div>
         </div>
     </div>
     <canvas id="universe" #universe></canvas>
     <div class="controls">
-        <button [disabled]="isLoading || image == null || !scale.canZoomIn()" pButton type="button" icon="pi pi-plus" class="p-button-rounded" (click)="zoomIn()"></button>
-        <button [disabled]="isLoading || image == null || !scale.canZoomOut()" pButton type="button" icon="pi pi-minus" class="p-button-rounded" (click)="zoomOut()"></button>
-        <button [disabled]="isLoading || image == null" pButton type="button" icon="pi pi-refresh" class="p-button-rounded p-button-danger" (click)="zoomReset()"></button>
+        <button [disabled]="isLoading || data.image == null || !scale.canZoomIn()" pButton type="button" icon="pi pi-plus" class="p-button-rounded" (click)="zoomIn()"></button>
+        <button [disabled]="isLoading || data.image == null || !scale.canZoomOut()" pButton type="button" icon="pi pi-minus" class="p-button-rounded" (click)="zoomOut()"></button>
+        <button [disabled]="isLoading || data.image == null" pButton type="button" icon="pi pi-refresh" class="p-button-rounded p-button-danger" (click)="zoomReset()"></button>
     </div>
 </main>
