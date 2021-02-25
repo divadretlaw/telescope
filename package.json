@@ -39,6 +39,9 @@
         ],
         "mac": {
             "icon": "src/assets/icon.png"
+        },
+        "win": {
+            "icon": "src/assets/icon.ico"
         }
     },
     "private": true,

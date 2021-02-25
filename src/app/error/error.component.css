@@ -22,7 +22,6 @@ main {
     border-radius: 25px;
     padding: 1em;
     background: #292a2fcc;
-    overflow: scroll;
     z-index: 10000;
     backdrop-filter: blur(8px);
     padding: 5em 10em;

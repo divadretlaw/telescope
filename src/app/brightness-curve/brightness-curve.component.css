@@ -12,7 +12,7 @@ main {
     border-right: solid 1px #000;
     padding: 1em;
     background: #292a2fcc;
-    overflow: scroll;
+    overflow-y: scroll;
     z-index: 10000;
     backdrop-filter: blur(8px);
 }
