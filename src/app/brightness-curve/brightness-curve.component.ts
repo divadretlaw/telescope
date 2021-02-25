@@ -3,15 +3,14 @@ import { Router } from '@angular/router';
 
 import { BrightnessCurveData } from '../model/brightness-curve-data';
 import { Point } from '../model/point';
-import { Star } from '../model/star';
-import { Updateable } from '../model/updateable';
 import { Scale } from '../model/scale';
 import { CalculateOptions } from '../model/calculate-options';
+import { UploaderMode } from '../uploader/upload.component';
 
 import { DeviceDetectorService } from 'ngx-device-detector';
 
-import { FileUpload } from 'primeng/fileupload';
 import { MenuItem } from 'primeng/api';
+import { AppState } from '../app.state';
 
 @Component({
   selector: 'app-brightness-curve',
@@ -20,6 +19,8 @@ import { MenuItem } from 'primeng/api';
 })
 export class BrightnessCurveComponent implements OnInit {
   calculateOptions: typeof CalculateOptions = CalculateOptions;
+  uploaderMode: typeof UploaderMode = UploaderMode;
+
   loadingReason = '';
   isLoading = false;
 
@@ -27,16 +28,15 @@ export class BrightnessCurveComponent implements OnInit {
   private context: CanvasRenderingContext2D;
 
   data: BrightnessCurveData
-
+  scale = new Scale();
   downloadItems: MenuItem[];
 
   private forceDraw = false;
   private mouse = { down: false, selected: null };
+  private brightnessCurveSubscription;
 
-  scale = new Scale();
-
-  constructor(private router: Router, private deviceService: DeviceDetectorService) {
-    this.data = new BrightnessCurveData();
+  constructor(private appState: AppState, private router: Router, private deviceService: DeviceDetectorService) {
+    this.data = appState.getBrightnessCurveData();
   }
 
   ngOnInit(): void {
@@ -75,10 +75,24 @@ export class BrightnessCurveComponent implements OnInit {
       });
   }
 
+  ngOnDestroy(): void {
+    this.brightnessCurveSubscription.unsubscribe()
+  }
+
   ngAfterViewInit(): void {
     console.debug("ngAfterViewInit()");
     this.context = this.canvas.nativeElement.getContext('2d');
     this.setupMouseHandler();
+    this.brightnessCurveSubscription = this.appState.brightnessCurveData.asObservable().subscribe(x => {
+      console.log("New BrightnessCurve Data", x);
+      this.data = x;
+
+      if (x.file != null && x.image != null) {
+        this.draw();
+        this.focusOn(this.data.reference.value, false);
+        this.setLoading(false);
+      }
+    });
   }
 
   private hasRocketLaunched(ifOnline, ifOffline) {
@@ -102,57 +116,6 @@ export class BrightnessCurveComponent implements OnInit {
       document.getElementById("main").className = '';
       this.focusOnReference();
     }
-  }
-
-  openImage(files: any, form: FileUpload) {
-    console.debug("openImage(files:)", files, form);
-
-    this.data.file = files.files[0];
-    this.loadJpegPreview();
-
-    // TODO: Find a way yo clear or blur the file upload element
-    form.clearInputElement();
-    form.clear();
-  }
-
-  loadJpegPreview() {
-    this.setLoading(true, 'Generating preview');
-
-    var data = new FormData();
-    data.append("file", this.data.file);
-
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = false;
-    xhr.responseType = 'blob'
-
-    let self = this;
-    xhr.addEventListener("readystatechange", function() {
-      if(this.readyState === 4) {
-        var urlCreator = window.webkitURL || window.URL;
-        var imageUrl = urlCreator.createObjectURL(this.response);
-        console.log('imageURL', imageUrl);
-
-        let image = new Image();
-        image.src = imageUrl;
-        image.onload = function() {
-          let x = image.width / 2
-          let y = image.height / 2
-          self.data.reference = new Updateable(new Point(x, y, self.data.reference.value.radius),
-            new Point(-1, -1, -1));
-          self.data.star = new Updateable(new Star(x, y + Math.min(100, y / 2), self.data.star.value.line.length, self.data.star.value.line.width),
-            new Star(-1, -1, -1, -1));
-          self.draw();
-          self.setLoading(false);
-          self.focusOn(self.data.reference.value, false)
-        }
-
-        self.data.image = image;
-        self.forceDraw = true;
-      }
-    });
-
-    xhr.open("POST", "http://localhost:40270/preview");
-    xhr.send(data);
   }
 
   calculate(download: boolean, option: CalculateOptions = CalculateOptions.JSON) {
@@ -476,5 +439,9 @@ export class BrightnessCurveComponent implements OnInit {
         self.focusOnReference(false);
       }
     }, 100);
+  }
+
+  public test() {
+    this.router.navigateByUrl('/error');
   }
 }

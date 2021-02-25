@@ -5,8 +5,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app.routing';
+import { AppState } from './app.state';
 
-// MAKR: - PrimeNG
+// MARK: - PrimeNG
 import { FileUploadModule } from 'primeng/fileupload';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SliderModule } from 'primeng/slider';
@@ -15,10 +16,13 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-// MARK: - AppComponents
+// MARK: - App Components
 import { AppComponent } from './app.component';
 import { BrightnessCurveComponent } from './brightness-curve/brightness-curve.component';
 import { ErrorComponent } from './error/error.component';
+
+// MARK: App Modules
+import { UploadModule } from 'src/app/uploader/upload.module'
 
 @NgModule({
   declarations: [
@@ -38,9 +42,10 @@ import { ErrorComponent } from './error/error.component';
     SplitButtonModule,
     SliderModule,
     ColorPickerModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    UploadModule
   ],
-  providers: [],
+  providers: [AppState],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

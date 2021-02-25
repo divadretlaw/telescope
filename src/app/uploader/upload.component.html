@@ -1,0 +1,11 @@
+<div class="file-upload">
+  <ngx-file-drop [disabled]="uploadInProgress" contentClassName="file-drop" (onFileDrop)="dropped($event)">
+    <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector">
+      <label class="click-area">
+        <input [disabled]="uploadInProgress" #fileInput ng2FileSelect type="file" name="file" accept=".tiff, .cr2" style="display: none;" [uploader]="uploader"
+          (change)="uploader.uploadAll()" />
+        <h4>Select Image</h4>
+      </label>
+    </ng-template>
+  </ngx-file-drop>
+</div>

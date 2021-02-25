@@ -9,8 +9,7 @@
             <h1>Telescope</h1>
         </div>
         
-        <p-fileUpload #form [disabled]="isLoading" mode="basic" accept=".tiff, .cr2" customUpload="true" (uploadHandler)="openImage($event, form)" [auto]="true" chooseLabel="Select"></p-fileUpload>
-        <!-- <input type="file" #form [disabled]="isLoading" accept=".tiff, .cr2" (change)="openImage($event.target.files, form)"> -->
+        <app-file-upload [mode]="uploaderMode.BrightnessCurvePreview" (uploadStatus)="setLoading($event, 'Generating preview')"></app-file-upload>
 
         <div *ngIf="data.image">
             <div class="draw">
@@ -63,6 +62,7 @@
                 <button [disabled]="isLoading" pButton type="button" label="Show Brightness Curve" icon="pi pi-chart-line" (click)="calculate(false)"></button>
                 <p-splitButton [disabled]="isLoading" label="Download Brightness Curve" icon="pi pi-download" (onClick)="calculate(true, calculateOptions.CSV)" [model]="downloadItems"></p-splitButton>
                 <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="Draw Values Read" icon="pi pi-eye" (click)="calculate(false, calculateOptions.JPEG_Preview)"></button>
+                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="Test" icon="pi pi-eye" (click)="test()"></button>
             </div>
         </div>
     </div>
