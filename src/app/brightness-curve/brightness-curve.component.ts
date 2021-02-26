@@ -36,7 +36,7 @@ export class BrightnessCurveComponent implements OnInit {
   private brightnessCurveSubscription;
   private animationFrame: number
 
-  constructor(private appState: AppState, private router: Router, private deviceService: DeviceDetectorService) {
+  constructor(private appState: AppState, private router: Router) {
     let data = appState.getBrightnessCurveData();
     if (this.data === null || this.data === undefined) {
       this.data = data;
@@ -46,8 +46,7 @@ export class BrightnessCurveComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    let deviceInfo = this.deviceService.getDeviceInfo();
-    console.debug("ngOnInit()", deviceInfo);
+    console.debug("ngOnInit()");
 
     this.downloadItems = 
       [{
@@ -71,14 +70,6 @@ export class BrightnessCurveComponent implements OnInit {
           this.calculate(true, CalculateOptions.JPEG);
         }
       }];
-
-      let self = this;
-      this.hasRocketLaunched(function () {
-        console.log('Rocket is launched...');
-      }, function() {
-        console.log('Rocket never launched or has crashed...');
-        self.router.navigateByUrl("/error?reason=rocket");
-      });
   }
 
   ngOnDestroy(): void {
@@ -103,17 +94,6 @@ export class BrightnessCurveComponent implements OnInit {
         this.setLoading(false);
       }
     });
-  }
-
-  private hasRocketLaunched(ifOnline, ifOffline) {
-    let image = new Image();
-    image.onload = function() {
-        ifOnline && ifOnline.constructor == Function && ifOnline();
-    };
-    image.onerror = function() {
-        ifOffline && ifOffline.constructor == Function && ifOffline();
-    };
-    image.src = `http://localhost:40270/status.gif?${Date.now()}`;        
   }
 
   setLoading(loading: boolean, reason: string = null) {

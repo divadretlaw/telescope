@@ -23,4 +23,15 @@ export class AppState {
         console.debug('AppState.setBrightnessCurveData')
         this.brightnessCurveData.next(brightnessCurveData)
     }
+
+    public hasRocketLaunched(ifOnline, ifOffline) {
+        let image = new Image();
+        image.onload = function() {
+            ifOnline && ifOnline.constructor == Function && ifOnline();
+        };
+        image.onerror = function() {
+            ifOffline && ifOffline.constructor == Function && ifOffline();
+        };
+        image.src = `http://localhost:40270/status.gif?${Date.now()}`;        
+    }
 }

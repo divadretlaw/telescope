@@ -28,7 +28,7 @@ function createWindow() {
 
     if (!rocketLaunched) {
         console.log('rootPath', resourcesPath);
-        rocket = spawn(path.join(resourcesPath, 'rocket/rocket'))
+        rocket = spawn(path.join(resourcesPath, 'rocket/rocket'));
         rocket.stdout.on( 'data', data => {
             console.log(`rocket: ${data}`);
         });
