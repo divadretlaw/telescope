@@ -34,9 +34,15 @@ export class BrightnessCurveComponent implements OnInit {
   private forceDraw = false;
   private mouse = { down: false, selected: null };
   private brightnessCurveSubscription;
+  private animationFrame: number
 
   constructor(private appState: AppState, private router: Router, private deviceService: DeviceDetectorService) {
-    this.data = appState.getBrightnessCurveData();
+    let data = appState.getBrightnessCurveData();
+    if (this.data === null || this.data === undefined) {
+      this.data = data;
+    } else {
+      this.data.copyFrom(data);
+    }
   }
 
   ngOnInit(): void {
@@ -76,6 +82,9 @@ export class BrightnessCurveComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+    }
     this.brightnessCurveSubscription.unsubscribe()
   }
 
@@ -83,11 +92,12 @@ export class BrightnessCurveComponent implements OnInit {
     console.debug("ngAfterViewInit()");
     this.context = this.canvas.nativeElement.getContext('2d');
     this.setupMouseHandler();
-    this.brightnessCurveSubscription = this.appState.brightnessCurveData.asObservable().subscribe(x => {
-      console.log("New BrightnessCurve Data", x);
-      this.data = x;
+    this.brightnessCurveSubscription = this.appState.brightnessCurveData.asObservable().subscribe(data => {
+      console.log("New BrightnessCurve Data", data);
+      this.data.copyFrom(data);
 
-      if (x.file != null && x.image != null) {
+      if (data.file != null && data.image != null) {
+        this.forceDraw = true;
         this.draw();
         this.focusOn(this.data.reference.value, false);
         this.setLoading(false);
@@ -168,7 +178,7 @@ export class BrightnessCurveComponent implements OnInit {
 
     let self = this;
 
-    let downloadFunction = function (result) {
+    let downloadFunction = (result) => {
       let blob;
       if (blobResponse) {
         blob = result.response;
@@ -197,7 +207,7 @@ export class BrightnessCurveComponent implements OnInit {
         self.forceDraw = true;
     };
 
-    xhr.addEventListener("readystatechange", function() {
+    xhr.addEventListener("readystatechange", function () {
       if(this.readyState === 4) {
         if (download) {
           downloadFunction(this);
@@ -220,11 +230,12 @@ export class BrightnessCurveComponent implements OnInit {
   draw() {
     if (this.canvas == undefined  || this.context == undefined || this.data.image == undefined) {
       console.error("Unable to draw()");
+      this.animationFrame = requestAnimationFrame(this.draw.bind(this));
       return;
     }
 
     if (!this.forceDraw && !this.data.reference.didChange() && !this.data.star.didChange()) {
-      requestAnimationFrame(this.draw.bind(this));
+      this.animationFrame = requestAnimationFrame(this.draw.bind(this));
       return;
     }
 
@@ -247,7 +258,7 @@ export class BrightnessCurveComponent implements OnInit {
     this.drawStar();
 
     this.forceDraw = false;
-    requestAnimationFrame(this.draw.bind(this));
+    this.animationFrame = requestAnimationFrame(this.draw.bind(this));
   }
 
   private drawReferencePoint() {
@@ -441,7 +452,13 @@ export class BrightnessCurveComponent implements OnInit {
     }, 100);
   }
 
+  // MARK: - DEBUG
+
   public test() {
     this.router.navigateByUrl('/error');
+  }
+
+  public debug() {
+    console.debug(this.data);
   }
 }

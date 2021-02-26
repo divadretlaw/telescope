@@ -25,4 +25,11 @@ export class Point implements Equatable<Point>, Copyable<Point> {
     public copy(): Point {
         return new Point(this.x, this.y, this.radius, this.color);
     }
+
+    public copyFrom(data: Point) {
+        this.x = data.x;
+        this.y = data.y;
+        this.radius = data.radius;
+        this.color = data.color;
+    }
 }

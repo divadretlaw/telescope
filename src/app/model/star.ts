@@ -20,4 +20,9 @@ export class Star extends Point implements Equatable<Star>, Copyable<Star> {
     public copy(): Star {
         return new Star(this.x, this.y, this.line.length, this.line.width, this.color)
     }
+
+    public copyFrom(data: Star) {
+        super.copyFrom(data);
+        this.line.copyFrom(data.line);
+    }
 }

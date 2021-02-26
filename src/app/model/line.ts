@@ -19,4 +19,9 @@ export class Line implements Equatable<Line>, Copyable<Line> {
     public copy(): Line {
         return new Line(this.length, this.width);
     }
+
+    public copyFrom(data: Line) {
+        this.width = data.width;
+        this.length = data.length;
+    }
 }

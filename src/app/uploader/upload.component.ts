@@ -24,6 +24,8 @@ export class UploadComponent implements OnInit {
 
   @Output() uploadStatus: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  private allowedFileTypes = ['.tiff', '.cr2'];
+
   constructor(private appState: AppState) {
   }
 
@@ -63,6 +65,9 @@ export class UploadComponent implements OnInit {
             // this.msgs.push({severity: 'error', summary: 'Beim Upload ist ein Fehler aufgetreten', detail: response});
             break;
         }
+
+        this.fileInput.nativeElement.blur();
+        this.fileInput.nativeElement.value = '';
       };
   }
 
@@ -75,7 +80,8 @@ export class UploadComponent implements OnInit {
         const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
 
         // Only RAW Image files are allowed
-        if (!(fileEntry.name.endsWith('.tiff') || fileEntry.name.endsWith('.cr2'))) {
+
+        if (!this.endsWithAny(this.allowedFileTypes, fileEntry.name)) {
           continue;
         }
 
@@ -87,6 +93,15 @@ export class UploadComponent implements OnInit {
       }
     }
   }
+
+  private endsWithAny(suffixes: string[], value: string) {
+    for (let suffix of suffixes) {
+      if (value.endsWith(suffix)) {
+        return true;
+      }
+    }
+    return false;
+}
 
   private brightnessCurvePreview(item: FileItem, response) {
     var urlCreator = window.webkitURL || window.URL;

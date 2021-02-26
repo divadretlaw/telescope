@@ -17,4 +17,9 @@ export class Updateable<T extends Equatable<T> & Copyable<T>> {
     public update() {
         this.oldValue = this.value.copy();
     }
+
+    public copyFrom(data: Updateable<T>) {
+        this.value.copyFrom(data.value);
+        this.oldValue = null;
+    }
 }
