@@ -15,6 +15,8 @@ import { ButtonModule } from 'primeng/button';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ToggleButtonModule } from 'primeng/togglebutton';
+import { ChartModule } from 'primeng/chart';
 
 // MARK: - App Components
 import { AppComponent } from './app.component';
@@ -22,13 +24,15 @@ import { BrightnessCurveComponent } from './brightness-curve/brightness-curve.co
 import { ErrorComponent } from './error/error.component';
 
 // MARK: App Modules
-import { UploadModule } from 'src/app/uploader/upload.module'
+import { UploadModule } from 'src/app/uploader/upload.module';
+import { BrightnessCurveChartComponent } from './brightness-curve-chart/brightness-curve-chart.component'
 
 @NgModule({
   declarations: [
     AppComponent,
     BrightnessCurveComponent,
-    ErrorComponent
+    ErrorComponent,
+    BrightnessCurveChartComponent
   ],
   imports: [
     BrowserModule,
@@ -43,6 +47,8 @@ import { UploadModule } from 'src/app/uploader/upload.module'
     SliderModule,
     ColorPickerModule,
     ProgressSpinnerModule,
+    ToggleButtonModule,
+    ChartModule,
     UploadModule
   ],
   providers: [AppState],

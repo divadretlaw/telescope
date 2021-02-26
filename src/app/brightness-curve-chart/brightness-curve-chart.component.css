@@ -1,0 +1,35 @@
+.content {
+    /* position:relative; */
+    margin-left: 366px;
+    height: 100%;
+    width: 100%;
+    overflow: scroll;
+}
+
+.controls > * {
+    display: block;
+    margin: 0.5em 0;
+}
+
+.draw > .dataset {
+    margin: 0.5em 0;
+}
+
+.dataset {
+    display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+	align-items: center;
+	align-content: stretch;
+    align-self: center;
+}
+
+.dataset p-togglebutton {
+    width: 100%;
+    margin-left: 0.5em;
+}
+
+.dataset p-colorpicker {
+    height: 34px;
+}

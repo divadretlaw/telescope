@@ -215,6 +215,7 @@ export class BrightnessCurveComponent implements OnInit {
           previewFunction(this);
         } else {
           self.data.json = JSON.parse(this.responseText);
+          self.router.navigateByUrl('/brightnessCurve/chart');
         }
       
         self.setLoading(false);
