@@ -7,8 +7,6 @@ import { Scale } from '../model/scale';
 import { CalculateOptions } from '../model/calculate-options';
 import { UploaderMode } from '../uploader/upload.component';
 
-import { DeviceDetectorService } from 'ngx-device-detector';
-
 import { MenuItem } from 'primeng/api';
 import { AppState } from '../app.state';
 
@@ -104,7 +102,7 @@ export class BrightnessCurveComponent implements OnInit {
     } else {
       this.isLoading = false;
       document.getElementById("main").className = '';
-      this.focusOnReference();
+      this.focusOnStar();
     }
   }
 
@@ -296,17 +294,17 @@ export class BrightnessCurveComponent implements OnInit {
 
   zoomIn() {
     this.scale.zoomIn();
-    this.focusOnReference();
+    this.focusOnStar();
   }
 
   zoomOut() {
     this.scale.zoomOut();
-    this.focusOnReference();
+    this.focusOnStar();
   }
 
   zoomReset() {
     this.scale.reset();
-    this.focusOnReference();
+    this.focusOnStar();
   }
 
   private focusOn(point: Point, animated) {
@@ -423,12 +421,12 @@ export class BrightnessCurveComponent implements OnInit {
     return returnValue;
   }
 
-  private focusOnReference(redo: boolean = true) {
+  private focusOnStar(redo: boolean = true) {
     let self = this;
     setTimeout(function () {
-      self.focusOn(self.data.reference.value, false);
+      self.focusOn(self.data.star.value, false);
       if (redo) {
-        self.focusOnReference(false);
+        self.focusOnStar(false);
       }
     }, 100);
   }
