@@ -5,25 +5,23 @@ from model.line import Line
 from model.point import Point
 
 
-def path(center: Point, start: Point, line: Line, max_width, max_height):
+def path(center: Point, start: Point, line: Line, max_width: int, max_height: int):
     x = float(start.x - center.x)
     y = float(start.y - center.y)
 
     radius = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 
-    start_angle = math.acos(x / float(radius))
-    arc = float(line.length) / float(radius)
+    start_angle = math.acos(x / radius)
+    arc = float(line.length) / radius
     if y <= 0:
         start_angle *= -1
     end_angle = start_angle - arc
 
     result = []
-    step = 0.0001
+    step = min_step(max_width, max_height)
     for angle in numpy.arange(min(start_angle, end_angle), max(start_angle + step, end_angle + step), step):
-        x = float(center.x) + float(radius) * math.cos(angle)
-        y = float(center.y) + float(radius) * math.sin(angle)
-
-        # print(x, y, angle)
+        x = float(center.x) + radius * math.cos(angle)
+        y = float(center.y) + radius * math.sin(angle)
 
         if 0 <= x < max_width and 0 <= y < max_height:
             point = Point(int(x), int(y))
@@ -33,6 +31,27 @@ def path(center: Point, start: Point, line: Line, max_width, max_height):
 
     result.reverse()
     return result
+
+
+def min_step(max_width: int, max_height: int):
+    x = max_width - 2
+    y = max_height - 2
+
+    radius = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+    angle = math.acos(x / radius)
+
+    steps = []
+    for x in range(x - 1, x + 2):
+        for y in range(y - 1, y + 2):
+            radius = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+            step = abs(math.acos(x / radius) - angle)
+            if step > 0:
+                steps.append(step)
+    print('steps', steps)
+    if len(steps) > 0:
+        return min(steps)
+    else:
+        return 0.0001
 
 
 def neighbours(point: Point, max_width, max_height):

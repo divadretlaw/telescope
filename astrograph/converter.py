@@ -19,7 +19,18 @@ def convert_tiff(file):
 def convert_raw(file):
     preview = io.BytesIO()
     raw = rawpy.imread(file)
-    rgb = raw.postprocess(use_camera_wb=True, no_auto_bright=True)
-    imageio.imwrite(preview, rgb, format="JPEG")
-    return preview
 
+    if rawpy.DemosaicAlgorithm.AMAZE.isSupported:
+        demosaic_algorithm = rawpy.DemosaicAlgorithm.AMAZE
+    elif rawpy.DemosaicAlgorithm.DCB.isSupported:
+        demosaic_algorithm = rawpy.DemosaicAlgorithm.DCB
+    else:
+        demosaic_algorithm = rawpy.DemosaicAlgorithm.AHD
+
+    rgb = raw.postprocess(demosaic_algorithm=demosaic_algorithm,
+                          use_camera_wb=True,
+                          no_auto_bright=True,
+                          output_bps=8,
+                          median_filter_passes=1)
+    imageio.imwrite(preview, rgb, format="JPEG", optimize=True)
+    return preview

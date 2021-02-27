@@ -8,7 +8,7 @@ class Star(Point):
     line: Line
 
     def __init__(self, x: int, y: int, length: int, width: int):
-        Point.__init__(self, x, y, 10)
+        Point.__init__(self, x, y, 5)
 
         self.x = x
         self.y = y

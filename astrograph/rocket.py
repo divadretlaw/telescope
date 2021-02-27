@@ -93,7 +93,7 @@ def astrograph_brightness_curve():
             if "preview" in info and info["preview"] is True:
                 logging.debug("brightness_curve: returning debug image")
                 jpeg = io.BytesIO()
-                imageio.imwrite(jpeg, brightness_curve.raw_data, format="JPEG")
+                imageio.imwrite(jpeg, brightness_curve.raw_data, format="JPEG", quality=100, optimize=True)
 
                 proxy = io.BytesIO()
                 proxy.write(jpeg.getvalue())

@@ -17,6 +17,7 @@ import points
 
 
 class BrightnessCurve:
+    version = '0.9.0'
     file: BytesIO
     reference: Point
     star: Star
@@ -39,7 +40,22 @@ class BrightnessCurve:
             self.width = sizes.width
             self.height = sizes.height
             logging.info("Postprocess image")
-            self.raw_data = raw_image.postprocess(gamma=(1, 1),
+
+            if rawpy.DemosaicAlgorithm.AMAZE.isSupported:
+                logging.info("Demosaic Algorithm: AMAZE")
+                demosaic_algorithm = rawpy.DemosaicAlgorithm.AMAZE
+            elif rawpy.DemosaicAlgorithm.DCB.isSupported:
+                logging.info("Demosaic Algorithm: DCB")
+                demosaic_algorithm = rawpy.DemosaicAlgorithm.DCB
+            elif rawpy.DemosaicAlgorithm.VNG.isSupported:
+                logging.info("Demosaic Algorithm: VNG")
+                demosaic_algorithm = rawpy.DemosaicAlgorithm.VNG
+            else:
+                logging.info("Demosaic Algorithm: AHD")
+                demosaic_algorithm = rawpy.DemosaicAlgorithm.AHD
+
+            self.raw_data = raw_image.postprocess(demosaic_algorithm=demosaic_algorithm,
+                                                  gamma=(1, 1),
                                                   no_auto_bright=True,
                                                   use_camera_wb=True)
             self.raw_image = raw_image
@@ -55,18 +71,22 @@ class BrightnessCurve:
 
     def dictionary(self):
         return {
+            "type": 'brightnessCurve',
+            "version": self.version,
             "center": self.reference.dictionary(),
             "star": self.star.dictionary(),
-            "data": list(map(lambda x: x.dictionary(), self.data))
+            "data": list(map(lambda entry: entry.dictionary(), self.data))
         }
 
     def string(self):
         result = """
+BrightnessCurve;version;{version}
 Center;{center_x};{center_y};{center_radius}
 Star;{star_x};{star_y};{star_radius};{star_length}
 
-index;average;median;min;max
-""".format(center_x=self.reference.x,
+index;average;median;min;max;origin
+""".format(version=self.version,
+           center_x=self.reference.x,
            center_y=self.reference.y,
            center_radius=self.reference.radius,
            star_x=self.star.x,
@@ -98,11 +118,15 @@ index;average;median;min;max
             for point in points.neighbours(self.reference, self.width, self.height):
                 self.raw_data[point.y][point.x] = [0, 255, 0]
 
-            # DEBUG: Draw the start in red
+            # DEBUG: Draw the star in red
             for index, entry in enumerate(path):
                 origin = Point(entry.x, entry.y, self.star.line.width)
                 for point in points.neighbours(origin, self.width, self.height):
                     self.raw_data[point.y][point.x] = [255, 0, 0]
+
+            # DEBUG: Draw the path in yellow
+            for index, entry in enumerate(path):
+                self.raw_data[entry.y][entry.x] = [255, 255, 0]
 
             # DEBUG: Draw the start in blue
             for point in points.neighbours(self.star, self.width, self.height):
