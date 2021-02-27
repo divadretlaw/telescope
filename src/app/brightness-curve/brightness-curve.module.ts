@@ -10,10 +10,12 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToggleButtonModule } from 'primeng/togglebutton';
+import { ChartModule } from 'primeng/chart';
 
 import { UploadModule } from '../uploader/upload.module';
 
 import { BrightnessCurveComponent } from './brightness-curve.component';
+import { BrightnessCurveChartComponent } from './chart/chart.component';
 
 @NgModule({
   imports: [
@@ -27,9 +29,10 @@ import { BrightnessCurveComponent } from './brightness-curve.component';
     ColorPickerModule,
     ProgressSpinnerModule,
     ToggleButtonModule,
+    ChartModule,
     UploadModule
   ],
-  declarations: [BrightnessCurveComponent],
-  exports: [BrightnessCurveComponent]
+  declarations: [BrightnessCurveComponent, BrightnessCurveChartComponent],
+  exports: [BrightnessCurveComponent, BrightnessCurveChartComponent]
 })
 export class BrightnessCurveModule { }

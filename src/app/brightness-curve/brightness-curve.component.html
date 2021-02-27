@@ -60,13 +60,7 @@
             </div>
             <div class="actions">
                 <button [disabled]="isLoading" pButton type="button" label="Show Brightness Curve" icon="pi pi-chart-line" (click)="calculate(false)"></button>
-                <p-splitButton [disabled]="isLoading" label="Download Brightness Curve" icon="pi pi-download" (onClick)="calculate(true, calculateOptions.CSV)" [model]="downloadItems"></p-splitButton>
-            </div>
-            <div class="actions">
-                <h3>Debug</h3>
-                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="Draw Values Read" icon="pi pi-eye" (click)="calculate(false, calculateOptions.JPEG_Preview)"></button>
-                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="Test" icon="pi pi-eye" (click)="test()"></button>
-                <button [disabled]="isLoading" pButton type="button" class="p-button-help" label="Print Debug" icon="pi pi-eye" (click)="debug()"></button>
+                <p-splitButton [disabled]="isLoading" label="Download Brightness Curve" icon="pi pi-download" (onClick)="download(brightnessCurveOptions.csv)" [model]="downloadItems"></p-splitButton>
             </div>
         </div>
     </div>

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
+import { AppPath } from '../app.path';
 import { AppState } from '../app.state';
 
 @Component({
@@ -12,7 +13,6 @@ export class StartComponent implements OnInit {
   private retry = true;
 
   constructor(private appState: AppState, private router: Router, private deviceService: DeviceDetectorService) {
-    this.checkRocket();
   }
 
   ngOnInit(): void {
@@ -20,10 +20,14 @@ export class StartComponent implements OnInit {
     console.debug("ngOnInit()", deviceInfo);
   }
 
+  ngAfterViewInit(): void {
+    setTimeout(this.checkRocket.bind(this), 1000);
+  }
+
   private checkRocket() {
     this.appState.hasRocketLaunched(() => {
       console.log('Rocket is launched...');
-      this.router.navigateByUrl("/brightnessCurve");
+      this.router.navigate([AppPath.BrightnessCurve]);
     }, () => {
       console.log('Rocket never launched or has crashed...');
       if (this.retry === false) {

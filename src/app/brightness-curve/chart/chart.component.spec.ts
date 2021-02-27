@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BrightnessCurveChartComponent } from './brightness-curve-chart.component';
+import { BrightnessCurveChartComponent } from './chart.component';
 
 describe('BrightnessCurveChartComponent', () => {
   let component: BrightnessCurveChartComponent;

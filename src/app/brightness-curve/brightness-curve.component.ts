@@ -1,14 +1,17 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { BrightnessCurveData } from '../model/brightness-curve-data';
 import { Point } from '../model/point';
 import { Scale } from '../model/scale';
-import { CalculateOptions } from '../model/calculate-options';
 import { UploaderMode } from '../uploader/upload.component';
 
 import { MenuItem } from 'primeng/api';
 import { AppState } from '../app.state';
+import { AppPath } from '../app.path';
+
+import { Rocket } from '../rocket/rocket';
+import { BrightnessCurveOptions } from '../rocket/rocket.brightnessCurve';
 
 @Component({
   selector: 'app-brightness-curve',
@@ -16,25 +19,28 @@ import { AppState } from '../app.state';
   styleUrls: ['./brightness-curve.component.css']
 })
 export class BrightnessCurveComponent implements OnInit {
-  calculateOptions: typeof CalculateOptions = CalculateOptions;
+  brightnessCurveOptions: typeof BrightnessCurveOptions = BrightnessCurveOptions;
   uploaderMode: typeof UploaderMode = UploaderMode;
+
+  data: BrightnessCurveData
+  downloadItems: MenuItem[];
+  private rocket: Rocket
 
   loadingReason = '';
   isLoading = false;
 
   @ViewChild('universe', { static: true, read: ElementRef }) canvas: ElementRef;
   private context: CanvasRenderingContext2D;
-
-  data: BrightnessCurveData
   scale = new Scale();
-  downloadItems: MenuItem[];
-
   private forceDraw = false;
   private mouse = { down: false, selected: null };
-  private brightnessCurveSubscription;
   private animationFrame: number
 
-  constructor(private appState: AppState, private router: Router) {
+  private subscriptions = [];
+
+  constructor(private appState: AppState, private activatedRoute: ActivatedRoute, private router: Router) {
+    this.rocket = new Rocket();
+
     let data = appState.getBrightnessCurveData();
     if (this.data === null || this.data === undefined) {
       this.data = data;
@@ -51,21 +57,21 @@ export class BrightnessCurveComponent implements OnInit {
         label: 'Brightness Curve (.json)',
         icon: 'pi pi-file',
         command: () => {
-          this.calculate(true, CalculateOptions.JSON);
+          this.download(BrightnessCurveOptions.json);
         }
       },
       {
         label: 'Brightness Curve (.csv)',
         icon: 'pi pi-file-excel',
         command: () => {
-          this.calculate(true, CalculateOptions.CSV);
+          this.download(BrightnessCurveOptions.csv);
         }
       },
       {
         label: 'Brightness Curve (.jpeg)',
         icon: 'pi pi-image',
         command: () => {
-          this.calculate(true, CalculateOptions.JPEG);
+          this.download(BrightnessCurveOptions.jpeg);
         }
       }];
   }
@@ -74,14 +80,17 @@ export class BrightnessCurveComponent implements OnInit {
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);
     }
-    this.brightnessCurveSubscription.unsubscribe()
+    this.subscriptions.forEach(subscription => {
+      subscription.unsubscribe();
+    });
   }
 
   ngAfterViewInit(): void {
     console.debug("ngAfterViewInit()");
     this.context = this.canvas.nativeElement.getContext('2d');
     this.setupMouseHandler();
-    this.brightnessCurveSubscription = this.appState.brightnessCurveData.asObservable().subscribe(data => {
+
+    let brightnessCurveSubscription = this.appState.brightnessCurveData.asObservable().subscribe(data => {
       console.log("New BrightnessCurve Data", data);
       this.data.copyFrom(data);
 
@@ -92,6 +101,13 @@ export class BrightnessCurveComponent implements OnInit {
         this.setLoading(false);
       }
     });
+
+    let isLoadingSubscription = this.rocket.isLoading.asObservable().subscribe(isLoading => {
+      this.setLoading(isLoading[0], isLoading[1]);
+    });
+
+    this.subscriptions.push(brightnessCurveSubscription);
+    this.subscriptions.push(isLoadingSubscription);
   }
 
   setLoading(loading: boolean, reason: string = null) {
@@ -106,102 +122,15 @@ export class BrightnessCurveComponent implements OnInit {
     }
   }
 
-  calculate(download: boolean, option: CalculateOptions = CalculateOptions.JSON) {
-    this.setLoading(true, 'Calculating brightness curve');
+  download(option: BrightnessCurveOptions) {
+    this.rocket.downloadBrighnessCurve(this.data, option);
+  }
 
-    let type: string;
-    let fileExtension: string;
-    let blobResponse: boolean;
-    
-    switch (option) {
-      case CalculateOptions.CSV:
-        type = 'text/csv';
-        fileExtension = '.csv';
-        blobResponse = false;
-        break;
-      case CalculateOptions.JPEG:
-        type = 'image/jpeg';
-        fileExtension = '.jpeg';
-        blobResponse = true;
-        break;
-      case CalculateOptions.JPEG_Preview:
-        type = 'image/jpeg';
-        fileExtension = '.jpeg';
-        blobResponse = true;
-        break;
-      default:
-        type = 'text/json';
-        fileExtension = '.json';
-        blobResponse = false;
-        break;
-    }
-
-    let parameters = {
-      reference: this.data.reference.value,
-      star: this.data.star.value,
-      csv: option == 1,
-      preview: blobResponse
-    }
-    let json = JSON.stringify(parameters);
-
-    var data = new FormData();
-    data.append("file", this.data.file);
-    data.append("parameters", json);
-
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = false;
-    if (blobResponse) {
-      xhr.responseType = 'blob';
-    }
-
-    let self = this;
-
-    let downloadFunction = (result) => {
-      let blob;
-      if (blobResponse) {
-        blob = result.response;
-      } else {
-        blob = new Blob([result.responseText], { type: type });
-      }
-
-      var link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.download = `result${fileExtension}`;
-      link.click();
-    };
-
-    let previewFunction = function (result) {
-      var urlCreator = window.webkitURL || window.URL;
-        var imageUrl = urlCreator.createObjectURL(result.response);
-        console.log('imageURL', imageUrl);
-
-        let image = new Image();
-        image.src = imageUrl;
-        image.onload = function() {
-          self.draw();
-        }
-
-        self.data.image = image;
-        self.forceDraw = true;
-    };
-
-    xhr.addEventListener("readystatechange", function () {
-      if(this.readyState === 4) {
-        if (download) {
-          downloadFunction(this);
-        } else if (option == CalculateOptions.JPEG_Preview) {
-          previewFunction(this);
-        } else {
-          self.data.json = JSON.parse(this.responseText);
-          self.router.navigateByUrl('/brightnessCurve/chart');
-        }
-      
-        self.setLoading(false);
-      }
+  calculate() {
+    this.rocket.brighnessCurve(this.data, (json) => {
+      this.data.json = json
+      this.router.navigate([AppPath.Chart], { relativeTo: this.activatedRoute });
     });
-
-    xhr.open("POST", "http://localhost:40270/brightness_curve");
-    xhr.send(data);
   }
 
   // MARK: - Draw
@@ -341,8 +270,6 @@ export class BrightnessCurveComponent implements OnInit {
     let currentTime = 0;
     let increment = 20;
 
-    let self = this;
-
     let easeInOutQuad = function (t, b, c, d) {
       t /= d/2;
       if (t < 1) return c/2*t*t + b;
@@ -350,7 +277,7 @@ export class BrightnessCurveComponent implements OnInit {
       return -c/2 * (t*(t-2) - 1) + b;
     };
 
-    let animateScroll = function() {      
+    let animateScroll = () => {      
         currentTime += increment;
         
         element.scrollTop = easeInOutQuad(currentTime, startTop, changeTop, duration);;
@@ -360,7 +287,7 @@ export class BrightnessCurveComponent implements OnInit {
           setTimeout(animateScroll, increment);
         }
 
-        self.forceDraw = true;
+        this.forceDraw = true;
     };
     animateScroll();
   }
@@ -392,8 +319,6 @@ export class BrightnessCurveComponent implements OnInit {
     });
 
     this.canvas.nativeElement.addEventListener('mousemove', (e: MouseEvent) => {
-      // e.preventDefault();
-      // e.stopPropagation();
       if (!this.mouse.down || this.mouse.selected == null) {
         return;
       }
@@ -413,7 +338,9 @@ export class BrightnessCurveComponent implements OnInit {
   private hitTest(value: Point, mouseX: number, mouseY: number): boolean {
     let returnValue = false;
     this.context.beginPath();
-    this.context.arc(value.x, value.y, value.radius + 10, 0, 2 * Math.PI);
+    let scaleFactor = this.scale.inverseFactor();
+    let radius = 1 + value.radius * 2
+    this.context.arc(value.x, value.y, radius * scaleFactor + 10, 0, 2 * Math.PI);
     if (this.context.isPointInPath(mouseX, mouseY)) {
       returnValue = true;
     }
@@ -422,22 +349,12 @@ export class BrightnessCurveComponent implements OnInit {
   }
 
   private focusOnStar(redo: boolean = true) {
-    let self = this;
-    setTimeout(function () {
-      self.focusOn(self.data.star.value, false);
+    setTimeout(() => {
+      this.focusOn(this.data.star.value, false);
       if (redo) {
-        self.focusOnStar(false);
+        this.focusOnStar(false);
       }
     }, 100);
   }
 
-  // MARK: - DEBUG
-
-  public test() {
-    this.router.navigateByUrl('/error');
-  }
-
-  public debug() {
-    console.debug(this.data);
-  }
 }

@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { StartComponent } from './start/start.component';
 import { BrightnessCurveComponent } from './brightness-curve/brightness-curve.component';
-import { BrightnessCurveChartComponent } from './brightness-curve-chart/brightness-curve-chart.component';
+import { BrightnessCurveChartComponent } from './brightness-curve/chart/chart.component';
 import { ErrorComponent } from './error/error.component';
 
 const appRoutes: Routes = [
@@ -12,9 +12,6 @@ const appRoutes: Routes = [
   { path: 'brightnessCurve/chart', component: BrightnessCurveChartComponent },
   { path: '**', component: ErrorComponent } // error
 ];
-
-
-const routes: Routes = [];
 
 @NgModule({
   imports: [RouterModule.forRoot(

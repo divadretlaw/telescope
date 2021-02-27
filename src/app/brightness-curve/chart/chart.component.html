@@ -6,29 +6,29 @@
         </div>
         <div class="controls">
             <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="edit()"></button>
-            <p-splitButton label="Download Brightness Curve" icon="pi pi-download" (onClick)="save(calculateOptions.CSV)" [model]="downloadItems"></p-splitButton>
+            <p-splitButton label="Download Brightness Curve" icon="pi pi-download" (onClick)="saveCsv()" [model]="downloadItems"></p-splitButton>
         </div>
-        <div class="draw">
+        <!-- <div class="draw">
             <h2>Chart</h2>
             <div class="dataset">
+                <h3>Average</h3>
                 <p-colorPicker [(ngModel)]="average.color"></p-colorPicker>
-                <p-toggleButton onLabel="Hide Average" offLabel="Show Average" [(ngModel)]="average.show" (onChange)="update($event)"></p-toggleButton>
             </div>
             <div class="dataset">
+                <h3>Median</h3>
                 <p-colorPicker [(ngModel)]="median.color"></p-colorPicker>
-                <p-toggleButton onLabel="Hide Median" offLabel="Show Median" [(ngModel)]="median.show" (onChange)="update($event)"></p-toggleButton>
             </div>
             <div class="dataset">
+                <h3>Minimum</h3>
                 <p-colorPicker [(ngModel)]="minimum.color"></p-colorPicker>
-                <p-toggleButton onLabel="Hide Minimum" offLabel="Show Minimum" [(ngModel)]="minimum.show" (onChange)="update($event)"></p-toggleButton>
             </div>
             <div class="dataset">
+                <h3>Maximum</h3>
                 <p-colorPicker [(ngModel)]="maximum.color"></p-colorPicker>
-                <p-toggleButton onLabel="Hide Maximum" offLabel="Show Maximum" [(ngModel)]="maximum.show" (onChange)="update($event)"></p-toggleButton>
             </div>
-        </div>
+        </div> -->
     </div>
     <div class="content">
-        <p-chart type="line" [data]="data" height="100vh"></p-chart>
+        <p-chart type="line" [data]="data" [options]="options" height="100vh"></p-chart>
     </div>
 </main>

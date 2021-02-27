@@ -31,6 +31,7 @@ def path(center: Point, start: Point, line: Line, max_width, max_height):
             if not any(p.x == point.x and p.y == point.y for p in result):
                 result.append(point)
 
+    result.reverse()
     return result
 
 

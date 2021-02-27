@@ -9,7 +9,6 @@ import { AppComponent } from './app.component';
 
 import { UploadModule } from 'src/app/uploader/upload.module';
 import { StartModule } from './start/start.module'
-import { BrightnessCurveChartModule } from './brightness-curve-chart/brightness-curve-chart.module';
 import { ErrorModule } from 'src/app/error/error.module';
 import { BrightnessCurveModule } from './brightness-curve/brightness-curve.module';
 
@@ -25,7 +24,6 @@ import { BrightnessCurveModule } from './brightness-curve/brightness-curve.modul
     StartModule,
     UploadModule,
     BrightnessCurveModule,
-    BrightnessCurveChartModule,
     ErrorModule
   ],
   providers: [AppState],

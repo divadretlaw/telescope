@@ -1,37 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+
 import { MenuItem } from 'primeng/api';
-import { AppState } from '../app.state';
-import { BrightnessCurveData } from '../model/brightness-curve-data';
-import { CalculateOptions } from '../model/calculate-options';
 
-class ChartData {
-  label: string
-  data: any[]
-  show: boolean
-  color: string
+import { AppState } from '../../app.state';
 
-  constructor(label: string, color: string) {
-    this.label = label;
-    this.data = [];
-    this.show = true;
-    this.color = color;
-  }
-
-  getDataset() {
-    return { label: this.label, data: this.data, fill: false, borderColor: this.color }
-  }
-}
+import { ChartData } from '../../model/chart.data';
+import { BrightnessCurveData } from '../../model/brightness-curve-data';
 
 @Component({
   selector: 'app-brightness-curve-chart',
-  templateUrl: './brightness-curve-chart.component.html',
-  styleUrls: ['./brightness-curve-chart.component.css']
+  templateUrl: './chart.component.html',
+  styleUrls: ['./chart.component.css']
 })
 export class BrightnessCurveChartComponent implements OnInit {
-  calculateOptions: typeof CalculateOptions = CalculateOptions;
-
   data: any;
+  options: any;
 
   downloadItems: MenuItem[];
 
@@ -42,7 +26,7 @@ export class BrightnessCurveChartComponent implements OnInit {
 
   private raw: BrightnessCurveData
 
-  constructor(private appState: AppState, private router: Router) {
+  constructor(private appState: AppState, private activatedRoute: ActivatedRoute, private router: Router) {
     this.raw = appState.getBrightnessCurveData();
 
     this.downloadItems = 
@@ -50,14 +34,14 @@ export class BrightnessCurveChartComponent implements OnInit {
         label: 'Brightness Curve (.json)',
         icon: 'pi pi-file',
         command: () => {
-          this.save(CalculateOptions.JSON);
+          this.saveJson();
         }
       },
       {
         label: 'Brightness Curve (.csv)',
         icon: 'pi pi-file-excel',
         command: () => {
-          this.save(CalculateOptions.CSV);
+          this.saveCsv();
         }
       }];
 
@@ -87,44 +71,49 @@ export class BrightnessCurveChartComponent implements OnInit {
         this.median.getDataset(), 
         this.minimum.getDataset(),
         this.maximum.getDataset()]
-    }
+    };
 
-    console.log(this.data);
-  }
-
-  public update(event: Event) {
-    let labels = this.data.labels;
-    let datasets = [];
-
-    if (this.average.show) {
-      datasets.push(this.average.getDataset());
-    }
-
-    if (this.median.show) {
-      datasets.push(this.median.getDataset());
-    }
-
-    if (this.minimum.show) {
-      datasets.push(this.minimum.getDataset());
-    }
-
-    if (this.maximum.show) {
-      datasets.push(this.maximum.getDataset());
-    }
-
-    this.data = {
-      labels: labels,
-      datasets: datasets
-    }
+    this.options = {
+      title: {
+          display: true,
+          text: 'Brightness Curve',
+          fontSize: 16,
+          fontColor: '#E7E8EB'
+      },
+      legend: {
+          position: 'top',
+          labels: {
+            fontSize: 14,
+            fontColor: '#E7E8EB'
+          }
+      }
+    };
   }
 
   public edit() {
-    this.router.navigateByUrl('/brightnessCurve');
+    this.router.navigate(['..'], { relativeTo: this.activatedRoute });
   }
 
-  public save(option: CalculateOptions) {
+  public saveJson() {
+    // TODO: Save as filelet blob;
+    const text = JSON.stringify(this.raw.json);
+    const blob = new Blob([text], { type: 'text/json' });
+    
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `result.json`;
+    link.click();
+  }
+
+  public saveCsv() {
     // TODO: Convert to CSV
-    // TODO: Save as file
+    const text = JSON.stringify(this.raw.json);
+    const blob = new Blob([text], { type: 'text/csv' });
+    
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `result.csv`;
+    link.click();
   }
 
 }
