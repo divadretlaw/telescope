@@ -1,6 +1,7 @@
+click
 Flask
-Click
+imageio
 numpy
-opencv-python
-pillow
+Pillow
+pyinstaller
 rawpy

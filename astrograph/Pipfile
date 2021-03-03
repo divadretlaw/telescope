@@ -5,12 +5,12 @@ name = "pypi"
 
 [packages]
 click = "*"
-numpy = "*"
-opencv-python = "*"
-Flask = "*"
-pillow = "*"
-rawpy = "*"
 imageio = "*"
+numpy = "*"
+pyinstaller = "*"
+rawpy = "*"
+Flask = "*"
+Pillow = "*"
 
 [dev-packages]
 
