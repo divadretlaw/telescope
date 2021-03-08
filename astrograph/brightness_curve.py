@@ -115,13 +115,13 @@ index;average;median;min;max;origin
 
         if self.is_raw:
             # DEBUG: Draw the reference in green
-            for point in points.neighbours(self.reference, self.width, self.height):
+            for point in points.neighbors(self.reference, self.width, self.height):
                 self.raw_data[point.y][point.x] = [0, 255, 0]
 
             # DEBUG: Draw the star in red
             for index, entry in enumerate(path):
                 origin = Point(entry.x, entry.y, self.star.line.width)
-                for point in points.neighbours(origin, self.width, self.height):
+                for point in points.neighbors(origin, self.width, self.height):
                     self.raw_data[point.y][point.x] = [255, 0, 0]
 
             # DEBUG: Draw the path in yellow
@@ -129,24 +129,24 @@ index;average;median;min;max;origin
                 self.raw_data[entry.y][entry.x] = [255, 255, 0]
 
             # DEBUG: Draw the start in blue
-            for point in points.neighbours(self.star, self.width, self.height):
+            for point in points.neighbors(self.star, self.width, self.height):
                 self.raw_data[point.y][point.x] = [0, 0, 255]
 
             self.raw_image.close()
 
     def calculate_for(self, index, x, y):
         origin = Point(x, y, self.star.line.width)
-        neighbours = []
-        for point in points.neighbours(origin, self.width, self.height):
+        neighbors = []
+        for point in points.neighbors(origin, self.width, self.height):
             value = self.raw_data[point.y][point.x]
             if isinstance(value, numpy.ndarray):
-                neighbours.append(mean(value))
+                neighbors.append(mean(value))
             else:
-                neighbours.append(value)
+                neighbors.append(value)
 
-        min_value = min(neighbours)
-        max_value = max(neighbours)
-        average_value = mean(neighbours)
-        median_value = median(neighbours)
+        min_value = min(neighbors)
+        max_value = max(neighbors)
+        average_value = mean(neighbors)
+        median_value = median(neighbors)
 
         return Data(index, float(average_value), float(median_value), float(min_value), float(max_value), origin)

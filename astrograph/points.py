@@ -54,7 +54,7 @@ def min_step(max_width: int, max_height: int):
         return 0.0001
 
 
-def neighbours(point: Point, max_width, max_height):
+def neighbors(point: Point, max_width, max_height):
     points = []
 
     min_x = max(0, point.x - point.radius)
@@ -63,13 +63,13 @@ def neighbours(point: Point, max_width, max_height):
     min_y = max(0, point.y - point.radius)
     max_y = min(point.y + point.radius + 1, max_height)
 
-    radius = point.radius + 1
+    radius = point.radius
 
     for x in range(min_x, max_x):
         for y in range(min_y, max_y):
             x_axis = x - point.x
             y_axis = y - point.y
-            if (x_axis * x_axis) + (y_axis * y_axis) < (radius * radius):
+            if (x_axis * x_axis) + (y_axis * y_axis) <= (radius * radius):
                 points.append(Point(x, y))
 
     return points
