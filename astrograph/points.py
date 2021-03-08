@@ -9,7 +9,7 @@ def path(center: Point, start: Point, line: Line, max_width: int, max_height: in
     x = float(start.x - center.x)
     y = float(start.y - center.y)
 
-    radius = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+    radius = math.sqrt(math.pow(x, 2) + math.pow(y, 2)) + 1
 
     start_angle = math.acos(x / radius)
     arc = float(line.length) / radius
@@ -19,7 +19,7 @@ def path(center: Point, start: Point, line: Line, max_width: int, max_height: in
 
     result = []
     step = min_step(max_width, max_height)
-    for angle in numpy.arange(min(start_angle, end_angle), max(start_angle + step, end_angle + step), step):
+    for angle in numpy.arange(min(start_angle, end_angle), max(start_angle, end_angle), step):
         x = float(center.x) + radius * math.cos(angle)
         y = float(center.y) + radius * math.sin(angle)
 
@@ -45,9 +45,9 @@ def min_step(max_width: int, max_height: int):
         for y in range(y - 1, y + 2):
             radius = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
             step = abs(math.acos(x / radius) - angle)
-            if step > 0:
+            if step > 0.000000001:
                 steps.append(step)
-    print('steps', steps)
+
     if len(steps) > 0:
         return min(steps)
     else:
