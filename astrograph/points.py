@@ -6,6 +6,9 @@ from model.point import Point
 
 
 def path(center: Point, start: Point, line: Line, max_width: int, max_height: int):
+    """
+    Calculate the path from start with distance of line on the arc from center
+    """
     x = float(start.x - center.x)
     y = float(start.y - center.y)
 
@@ -18,22 +21,30 @@ def path(center: Point, start: Point, line: Line, max_width: int, max_height: in
     end_angle = start_angle - arc
 
     result = []
+    # minimum step for start to end angle
     step = min_step(max_width, max_height)
+    # calculate X and Y for each angle between start and end angle
     for angle in numpy.arange(min(start_angle, end_angle), max(start_angle, end_angle), step):
         x = float(center.x) + radius * math.cos(angle)
         y = float(center.y) + radius * math.sin(angle)
 
+        # check if point is inside the canvas
         if 0 <= x < max_width and 0 <= y < max_height:
             point = Point(int(x), int(y))
 
+            # add the point to the list if not already present
             if not any(p.x == point.x and p.y == point.y for p in result):
                 result.append(point)
 
+    # list is in clockwise but we assume counter-clockwise so we reverse it
     result.reverse()
     return result
 
 
 def min_step(max_width: int, max_height: int):
+    """
+    Attempt to calculate a minimum step for the angle
+    """
     x = max_width - 2
     y = max_height - 2
 
@@ -55,6 +66,9 @@ def min_step(max_width: int, max_height: int):
 
 
 def neighbors(point: Point, max_width, max_height):
+    """
+    Calculate all neighboring points of the given point within the points radius
+    """
     points = []
 
     min_x = max(0, point.x - point.radius)
@@ -65,10 +79,12 @@ def neighbors(point: Point, max_width, max_height):
 
     radius = point.radius
 
+    # check all points in the square
     for x in range(min_x, max_x):
         for y in range(min_y, max_y):
             x_axis = x - point.x
             y_axis = y - point.y
+            # check if the point is inside the circle
             if (x_axis * x_axis) + (y_axis * y_axis) <= (radius * radius):
                 points.append(Point(x, y))
 

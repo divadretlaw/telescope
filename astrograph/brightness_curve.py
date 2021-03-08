@@ -67,8 +67,6 @@ class BrightnessCurve:
             self.height = len(raw_image)
             self.raw_data = raw_image
 
-        # print(self.raw_data)
-
     def dictionary(self):
         return {
             "type": 'brightnessCurve',
@@ -106,6 +104,7 @@ index;average;median;min;max;origin
 
     def calculate(self):
         logging.debug("calculate")
+        # calculate path of star given center / reference and star origin and path
         path = points.path(self.reference, self.star, self.star.line, self.width, self.height)
         logging.debug("calculated path=%d" % len(path))
 
@@ -135,6 +134,9 @@ index;average;median;min;max;origin
             self.raw_image.close()
 
     def calculate_for(self, index, x, y):
+        """
+        Calculate the values for the point
+        """
         origin = Point(x, y, self.star.line.width)
         neighbors = []
         for point in points.neighbors(origin, self.width, self.height):
